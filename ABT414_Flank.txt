@@ -1,0 +1,11 @@
+ABT414_Flank	A1783	control
+ABT414_Flank	A9155	control
+ABT414_Flank	A9878	control
+ABT414_Flank	AT2550	control
+ABT414_Flank	AT2822	control
+ABT414_Flank	AT4415	control
+ABT414_Flank	AT4808	control
+ABT414_Flank	C0288	control
+ABT414_Flank	C0334	control
+ABT414_Flank	C1572	control
+ABT414_Flank	C8448	control
