@@ -1,9 +1,37 @@
 import csv
+import json 
 import numpy as np 
 from tabulate import tabulate
 import matplotlib.pyplot as plt
 from math import ceil
 from wand.image import Image as WImage
+ 
+def make_json(csvFilePath,keyName,alldata): 
+      
+    # create a dictionary 
+    data = {} 
+    
+    
+    # Open a csv reader called DictReader 
+    with open(csvFilePath, encoding='utf-8') as csvf: 
+        next(csvf)
+        
+        csvReader = csv.DictReader(csvf, delimiter='\t') 
+          
+        # Convert each row into a dictionary  
+        # and add it to data 
+        for rows in csvReader: 
+
+            # Assuming a column named 'No' to 
+            # be the primary key 
+            key = rows['CATEGORY'] 
+            data[key] = rows 
+  
+        alldata[keyName] = data
+
+    jsonfile = json.dumps(alldata)
+    
+    return jsonfile
 
 def plots(Sample,file,normal,listSample):
     
