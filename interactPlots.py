@@ -5,7 +5,8 @@ from tabulate import tabulate
 import matplotlib.pyplot as plt
 from math import ceil
 from wand.image import Image as WImage
- 
+from subprocess import Popen
+
 def make_json(csvFilePath,keyName,alldata): 
       
     # create a dictionary 
@@ -119,4 +120,13 @@ def tableShow(Sample,file, cols,listSample):
     
 
         
-    
+def commandsParallel(commands,batchSize,samplesParallel):
+    #print ("Numbers of samples in parallel: "+ str(samplesParallel))
+    itersPar = ceil(batchSize/samplesParallel)
+    #print("Numbers of iterations: "+ str(itersPar))
+    for i in range(itersPar):
+        try:
+            processes = [Popen(commands[(i*samplesParallel)+j], shell=True) for j in range(samplesParallel)]
+        except IndexError:
+            pass
+        exitcodes = [p.wait() for p in processes]
