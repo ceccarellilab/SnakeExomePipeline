@@ -123,6 +123,7 @@ def tableShow(Sample,file, cols,listSample):
 def commandsParallel(commands,commdsSize,commdsParallel):
     if commdsParallel>commdsSize:
         commdsParallel = commdsSize
+          
     print ("Numbers of samples in parallel: "+ str(commdsParallel))
     itersPar = ceil(commdsSize/commdsParallel)
     print("Numbers of iterations: "+ str(itersPar))
