@@ -120,13 +120,15 @@ def tableShow(Sample,file, cols,listSample):
     
 
         
-def commandsParallel(commands,batchSize,samplesParallel):
-    #print ("Numbers of samples in parallel: "+ str(samplesParallel))
-    itersPar = ceil(batchSize/samplesParallel)
-    #print("Numbers of iterations: "+ str(itersPar))
+def commandsParallel(commands,commdsSize,commdsParallel):
+    if commdsParallel>commdsSize:
+        commdsParallel = commdsSize
+    print ("Numbers of samples in parallel: "+ str(commdsParallel))
+    itersPar = ceil(commdsSize/commdsParallel)
+    print("Numbers of iterations: "+ str(itersPar))
     for i in range(itersPar):
         try:
-            processes = [Popen(commands[(i*samplesParallel)+j], shell=True) for j in range(samplesParallel)]
+            processes = [Popen(commands[(i*commdsParallel)+j], shell=True) for j in range(commdsParallel)]
         except IndexError:
             pass
         exitcodes = [p.wait() for p in processes]
