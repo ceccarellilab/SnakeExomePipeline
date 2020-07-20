@@ -40,6 +40,6 @@ bgzipdir : "/glusterfs/biostorage1/brick1/data/PUBLIC/Tools/lib/bin/bgzip"
 
 # Threads
 nt : 80 #number of threads to use in computation
-
+samplesParallel : 1000 #numbers of samples in parallel (1000 for all in parallel)
 
 
