@@ -1,11 +1,11 @@
-ABT414_Flank	A1783	control
-ABT414_Flank	A9155	control
-ABT414_Flank	A9878	control
-ABT414_Flank	AT2550	control
-ABT414_Flank	AT2822	control
-ABT414_Flank	AT4415	control
-ABT414_Flank	AT4808	control
-ABT414_Flank	C0288	control
-ABT414_Flank	C0334	control
-ABT414_Flank	C1572	control
-ABT414_Flank	C8448	control
+ABT414_Flank	A1783	/storage/gluster/vol1/data/PUBLIC/SCAMBIO/ABT414/ABT414_Flank/WES/RawData/XenomeData/A1783/	control	/storage/gluster/vol1/data/PUBLIC/SCAMBIO/ABT414/ABT414_G12_control/controlbam/XenomeData/
+ABT414_Flank	A9155	/storage/gluster/vol1/data/PUBLIC/SCAMBIO/ABT414/ABT414_Flank/WES/RawData/XenomeData/A9155/	control	/storage/gluster/vol1/data/PUBLIC/SCAMBIO/ABT414/ABT414_G12_control/controlbam/XenomeData/
+ABT414_Flank	A9878	/storage/gluster/vol1/data/PUBLIC/SCAMBIO/ABT414/ABT414_Flank/WES/RawData/XenomeData/A9878/	control	/storage/gluster/vol1/data/PUBLIC/SCAMBIO/ABT414/ABT414_G12_control/controlbam/XenomeData/
+ABT414_Flank	AT2550	/storage/gluster/vol1/data/PUBLIC/SCAMBIO/ABT414/ABT414_Flank/WES/RawData/XenomeData/AT2550/	control	/storage/gluster/vol1/data/PUBLIC/SCAMBIO/ABT414/ABT414_G12_control/controlbam/XenomeData/
+ABT414_Flank	AT2822	/storage/gluster/vol1/data/PUBLIC/SCAMBIO/ABT414/ABT414_Flank/WES/RawData/XenomeData/AT2822/	control	/storage/gluster/vol1/data/PUBLIC/SCAMBIO/ABT414/ABT414_G12_control/controlbam/XenomeData/
+ABT414_Flank	AT4415	/storage/gluster/vol1/data/PUBLIC/SCAMBIO/ABT414/ABT414_Flank/WES/RawData/XenomeData/AT4415/	control	/storage/gluster/vol1/data/PUBLIC/SCAMBIO/ABT414/ABT414_G12_control/controlbam/XenomeData/
+ABT414_Flank	AT4808	/storage/gluster/vol1/data/PUBLIC/SCAMBIO/ABT414/ABT414_Flank/WES/RawData/XenomeData/AT4808/	control	/storage/gluster/vol1/data/PUBLIC/SCAMBIO/ABT414/ABT414_G12_control/controlbam/XenomeData/
+ABT414_Flank	C0288	/storage/gluster/vol1/data/PUBLIC/SCAMBIO/ABT414/ABT414_Flank/WES/RawData/XenomeData/C0288/	control	/storage/gluster/vol1/data/PUBLIC/SCAMBIO/ABT414/ABT414_G12_control/controlbam/XenomeData/
+ABT414_Flank	C0334	/storage/gluster/vol1/data/PUBLIC/SCAMBIO/ABT414/ABT414_Flank/WES/RawData/XenomeData/C0334/	control	/storage/gluster/vol1/data/PUBLIC/SCAMBIO/ABT414/ABT414_G12_control/controlbam/XenomeData/
+ABT414_Flank	C1572	/storage/gluster/vol1/data/PUBLIC/SCAMBIO/ABT414/ABT414_Flank/WES/RawData/XenomeData/C1572/	control	/storage/gluster/vol1/data/PUBLIC/SCAMBIO/ABT414/ABT414_G12_control/controlbam/XenomeData/
+ABT414_Flank	C8448	/storage/gluster/vol1/data/PUBLIC/SCAMBIO/ABT414/ABT414_Flank/WES/RawData/XenomeData/C8448/	control	/storage/gluster/vol1/data/PUBLIC/SCAMBIO/ABT414/ABT414_G12_control/controlbam/XenomeData/
