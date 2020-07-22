@@ -2,12 +2,8 @@
 batch : "ABT414_Flank"
 
 # samples
-fastq_folder : "/storage/gluster/vol1/data/PUBLIC/SCAMBIO/ABT414/ABT414_Flank/WES/RawData/XenomeData"
-fastq_folder_NORMAL : "/storage/gluster/vol1/data/PUBLIC/SCAMBIO/ABT414/ABT414_G12_control/controlbam/XenomeData"
-
 fastq_1_suffix : "human_1.fastq"
 fastq_2_suffix : "human_2.fastq" #If using Illumina paired data
-samplelist : "../${batch}.txt"
 platform : "ILLUMINA"
 
 # reference data files
