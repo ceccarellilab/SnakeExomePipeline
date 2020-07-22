@@ -6,7 +6,9 @@
 
 	- **fastq_1_suffix** : fastq file suffix
 	- **fastq_2_suffix** : fastq file suffix (If using Illumina paired data)
-	- **platform** : 
+	- **platform** : name of the sequencing platform used to sequence the DNA. Possible options:
+        - ILLUMINA when the fastq files have been produced in an Illumina machine;
+        - IONTORRENT when the fastq files have been produced in a Life Technologies Ion-Torrent machine.
 
 	- **fasta** : path fasta file 
 	- **dbsnp** : path dbsnp file  
