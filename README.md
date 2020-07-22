@@ -39,8 +39,8 @@
 	- **COSMIC_DB** : Path to Catalogue of Somatic Mutations in Cancer (COSMIC) VCF file used to create the panel of normal file (Only one file is supported)  
 
     (DNAscope and TNscope models)
-	- **ML_MODEL_N** : Path to DNAscope machine learning model (second step of variant calling)
-	- **ML_MODEL_T** : Path to TNscope model (variant filtration)
+	- **ML_MODEL_N** : Path to DNAscope ML model to apply on the results of DNAscope
+	- **ML_MODEL_T** : Path to ML model to apply on the results of TNscope 
 
     (Software)
 	- **SENTIEON_DIR** : Path Sentieon software 
