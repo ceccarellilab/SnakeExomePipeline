@@ -1,7 +1,7 @@
 # ExomePipeline
 
 ### Input files:
-- options.yaml (yaml file): 
+- ***options.yaml*** (yaml file): 
 	- **batch** : name of batch a tab-delimited csv file
 
 	- **fastq_1_suffix** : FASTQ file suffix
@@ -11,13 +11,13 @@
         - IONTORRENT when the fastq files have been produced in a Life Technologies Ion-Torrent machine.
 
 	- **fasta** : Path to FASTA file containing the nucleotide sequence of the reference genome corresponding to the sample you will analyze  
-	- **dbsnp** : Path to dbSNP (Single Nucleotide Polymorphism database) that will be used to label known variants (can only use one dbSNP file)  
+	- **dbsnp** : Path to dbSNP (Single Nucleotide Polymorphism database) that will be used to label known variants (Only one file is supported)  
 	- **known_Mills_indels** : Path to Mills indels (INsertion-DELetions) file.
 	- **known_1000G_indels** : Path to 1000G indels (INsertion-DELetions) file.
 
 	- **panel_of_normal_TNsnv** : Path to panel of normal (recommended to create the normal file panel with the corresponding algorithm that you plan to use for somatic mutation calling)
 	- **panel_of_normal_TNhaplotyper** : path panel of normal
-	- **cosmic_db** : path CosmicDB vcf files 
+	- **cosmic_db** : path to Catalogue of Somatic Mutations in Cancer (COSMIC) VCF file used to create the panel of normal file (Only one file is supported)  
 
 	- **ML_MODEL_N** : Path to DNAscope machine learning model (second step of variant calling)
 	- **ML_MODEL_T** : Path to TNscope model (variant filtration)
@@ -32,7 +32,7 @@
 	- **samplesParallel** : Numbers of samples in parallel (set 1000 for all in parallel)
 	- **nt** : Number of threads to use for each command
  
-- BATCH.tsv (tab-delimited csv file): 
+- ***BATCH.tsv*** (tab-delimited csv file): 
 	- **COLUMN1** : Name of sample
 	- **COLUMN2** : Name of tumor
 	- **COLUMN3** : Folder path to FASTQ of tumor
