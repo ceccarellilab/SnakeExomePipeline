@@ -1,22 +1,22 @@
 # SET THE BATCH
-batch : "ABT414_Flank"
+BATCH : "ABT414_Flank"
 
 # samples
-fastq_1_suffix : "human_1.fastq"
-fastq_2_suffix : "human_2.fastq" #If using Illumina paired data
-platform : "ILLUMINA"
+FASTQ_1_SUFFIX : "human_1.fastq"
+FASTQ_2_SUFFIX : "human_2.fastq" #If using Illumina paired data
+PLATFORM : "ILLUMINA"
 
 # reference data files
-fasta : "/storage/gluster/vol1/bcbio/genomes/Hsapiens/hg19/bwa/hg19.fa"
-dbsnp : "/storage/gluster/vol1/bcbio/genomes/Hsapiens/hg19/variation/dbsnp-150.vcf.gz"
-known_Mills_indels : "/storage/gluster/vol1/bcbio/genomes/Hsapiens/hg19/variation/Mills_and_1000G_gold_standard.indels.vcf.gz"
-known_1000G_indels : "/storage/gluster/vol1/bcbio/genomes/Hsapiens/hg19/variation/1000G_phase1.snps.high_confidence.vcf.gz"
+FASTA : "/storage/gluster/vol1/bcbio/genomes/Hsapiens/hg19/bwa/hg19.fa"
+DBSNP : "/storage/gluster/vol1/bcbio/genomes/Hsapiens/hg19/variation/dbsnp-150.vcf.gz"
+KNOWN_MILLS_INDELS : "/storage/gluster/vol1/bcbio/genomes/Hsapiens/hg19/variation/Mills_and_1000G_gold_standard.indels.vcf.gz"
+KNOWN_1000G_INDELS : "/storage/gluster/vol1/bcbio/genomes/Hsapiens/hg19/variation/1000G_phase1.snps.high_confidence.vcf.gz"
 
 # panel of normal and CosmicDB vcf files
-panel_of_normal_TNsnv : "/storage/gluster/vol1/data/PUBLIC/NGS_ReferenceDatabase/firecloud_PoNs/reference_PoNs_refseq_exome_10bp_hg19_300_1kg_normal_panel_CHR.vcf.gz"
+PON_TNsnv : "/storage/gluster/vol1/data/PUBLIC/NGS_ReferenceDatabase/firecloud_PoNs/reference_PoNs_refseq_exome_10bp_hg19_300_1kg_normal_panel_CHR.vcf.gz"
 # We recommend that you create the panel of normal file with the corresponding algorithm that you plan to use for the somatic mutation calling. 
-panel_of_normal_TNhaplotyper : "/storage/gluster/vol1/data/PUBLIC/NGS_ReferenceDatabase/firecloud_PoNs/reference_PoNs_refseq_exome_10bp_hg19_300_1kg_normal_panel_CHR.vcf.gz"
-cosmic_db : "/storage/gluster/vol1/bcbio/genomes/Hsapiens/hg19/variation/cosmic.vcf.gz" 
+PON_TNhaplotyper : "/storage/gluster/vol1/data/PUBLIC/NGS_ReferenceDatabase/firecloud_PoNs/reference_PoNs_refseq_exome_10bp_hg19_300_1kg_normal_panel_CHR.vcf.gz"
+COSMIC_DB : "/storage/gluster/vol1/bcbio/genomes/Hsapiens/hg19/variation/cosmic.vcf.gz" 
 
 # DNAscope model
 ML_MODEL_N : "/storage/gluster/vol1/data/PUBLIC/Tools/sentieon-genomics-201808.05/SentieonDNAscopeModelBeta0.4a-201808.05.model"
@@ -24,18 +24,18 @@ ML_MODEL_N : "/storage/gluster/vol1/data/PUBLIC/Tools/sentieon-genomics-201808.0
 ML_MODEL_T : "/storage/gluster/vol1/data/PUBLIC/Tools/sentieon-genomics-201808.05/SentieonTNscopeModel_GiAB_HighAF_LowFP-201711.05.model"
 
 # Sentieon software package and license file
-SENTIEON_INSTALL_DIR : "/storage/gluster/vol1/SHARED/NGSTOOLS/SENTIEON/sentieon-genomics-201911"
+SENTIEON_DIR : "/storage/gluster/vol1/SHARED/NGSTOOLS/SENTIEON/sentieon-genomics-201911"
 SENTIEON_LICENSE : "192.168.6.249:8990"
 # export SENTIEON_LICENSE = "/storage/gluster/vol1/SHARED/NGSTOOLS/SENTIEON/Columbia_University_eval.lic"
 
 # bcftools PATH
-bcfdir : "/storage/gluster/vol1/SHARED/NGSTOOLS/BCBIO/bcbio/anaconda/bin/bcftools"
+BCF_DIR : "/storage/gluster/vol1/SHARED/NGSTOOLS/BCBIO/bcbio/anaconda/bin/bcftools"
 
 # bgzip PATH
-bgzipdir : "/glusterfs/biostorage1/brick1/data/PUBLIC/Tools/lib/bin/bgzip"
+BGZIP_DIR : "/glusterfs/biostorage1/brick1/data/PUBLIC/Tools/lib/bin/bgzip"
 
 # Threads
-nt : 80 #number of threads to use in computation
-samplesParallel : 1000 #numbers of samples in parallel (1000 for all in parallel)
+NUM_THREADS : 80 #number of threads to use in computation
+SAMPLES_PARALLEL : 1000 #numbers of samples in parallel (1000 for all in parallel)
 
 
