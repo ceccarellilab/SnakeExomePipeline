@@ -33,11 +33,11 @@
 	- **nt** : Number of threads to use for each command
  
 - ***BATCH.tsv*** (tab-delimited csv file): 
-	- **COLUMN1** : Name of sample
-	- **COLUMN2** : Name of tumor
-	- **COLUMN3** : Folder path to FASTQ of tumor
-	- **COLUMN4** : Name of normal
-	- **COLUMN5** : Folder path to FASTQ of normal
+	- **SAMPLE** : Name of Sample
+	- **TUMOR** : Name of Tumor
+	- **FASTQ_TUMOR_PATH** : Folder path to FASTQ of Tumor
+	- **NORMAL** : Name of Normal
+	- **FASTQ_NORMAL_PATH** : Folder path to FASTQ of Normal
 
 ### Output file:
 - **html_pipeline.zip**: Contains a dynamic HTML report executable locally

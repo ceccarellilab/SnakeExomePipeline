@@ -1,3 +1,4 @@
+SAMPLE	TUMOR	FASTQ_TUMOR_PATH	NORMAL	FASTQ_NORMAL_PATH
 ABT414_Flank	A1783	/storage/gluster/vol1/data/PUBLIC/SCAMBIO/ABT414/ABT414_Flank/WES/RawData/XenomeData/A1783/	control	/storage/gluster/vol1/data/PUBLIC/SCAMBIO/ABT414/ABT414_G12_control/controlbam/XenomeData/
 ABT414_Flank	A9155	/storage/gluster/vol1/data/PUBLIC/SCAMBIO/ABT414/ABT414_Flank/WES/RawData/XenomeData/A9155/	control	/storage/gluster/vol1/data/PUBLIC/SCAMBIO/ABT414/ABT414_G12_control/controlbam/XenomeData/
 ABT414_Flank	A9878	/storage/gluster/vol1/data/PUBLIC/SCAMBIO/ABT414/ABT414_Flank/WES/RawData/XenomeData/A9878/	control	/storage/gluster/vol1/data/PUBLIC/SCAMBIO/ABT414/ABT414_G12_control/controlbam/XenomeData/
