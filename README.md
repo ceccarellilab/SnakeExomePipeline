@@ -28,9 +28,8 @@
 
     (Reference data files)
 	- **FASTA** : Path to FASTA file containing the nucleotide sequence of the reference genome corresponding to the sample you will analyze  
-	- **DBSNP** : Path to dbSNP (Single Nucleotide Polymorphism database) that will be used to label known variants (Only one file is supported)  
-	- **KNOWN_MILLS_INDELS** : Path to Mills indels (INsertion-DELetions) file, a set of known sites used to help identify likely sites where the realignment is necessary; only indel variants in the file will be used.  (can include multiple collections of known sites)
-	- **KNOWN_1000G_INDELS** : Path to 1000G indels file.
+	- **DBSNP** : Path to dbSNP (Single Nucleotide Polymorphism database) that will be used to label known variants (Only one file is supported)
+    - **KNOWN_SITES** : Path to indels (INsertion-DELetions) file, a set of known sites used to help identify likely sites where the realignment is necessary; only indel variants in the file will be used.  (can include multiple collections of known sites ex. Mills and 1000G)
 
     (Panel of normal and CosmicDB vcf files)
 	- **PON_TNsnv** : Path to the Panel of Normal (PON) for the TNsnv algorithm. File containing the variants detected in the Panel of Normal analysis that will be used to remove false positives (Only one file is supported and recommended to create the normal file panel with the corresponding algorithm that you plan to use for somatic mutation calling). TNsnv algorithm performs the somatic variant calling on the tumor-normal matched pair or the tumor and panel of normal data, using a Genotyper algorithm.
