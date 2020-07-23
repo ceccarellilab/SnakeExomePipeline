@@ -20,8 +20,7 @@
 	- **BATCH** : Name of batch a tab-delimited csv file (without extension)
 
     (Samples)
-	- **FASTQ_1_SUFFIX** : FASTQ file suffix
-	- **FASTQ_2_SUFFIX** : FASTQ file suffix (If using Illumina paired data)
+    - **FASTQ_SUFFIXES** : FASTQ file suffix (Two suffixes if using Illumina paired data)
 	- **PLATFORM** : Name of the sequencing platform used to sequence the DNA. Possible options:
         - ILLUMINA when the fastq files have been produced in an Illumina machine;
         - IONTORRENT when the fastq files have been produced in a Life Technologies Ion-Torrent machine.

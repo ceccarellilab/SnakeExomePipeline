@@ -2,14 +2,15 @@
 BATCH : "ABT414_Flank"
 
 # samples
-FASTQ_1_SUFFIX : "human_1.fastq"
-FASTQ_2_SUFFIX : "human_2.fastq" #If using Illumina paired data
+FASTQ_SUFFIXES:
+    1_SUFFIX : "human_1.fastq"
+    2_SUFFIX : "human_2.fastq" #If using Illumina paired data  
+
 PLATFORM : "ILLUMINA"
 
 # reference data files
 FASTA : "/storage/gluster/vol1/bcbio/genomes/Hsapiens/hg19/bwa/hg19.fa"
 DBSNP : "/storage/gluster/vol1/bcbio/genomes/Hsapiens/hg19/variation/dbsnp-150.vcf.gz"
-
 KNOWN_SITES:
     MILLS_INDELS : "/storage/gluster/vol1/bcbio/genomes/Hsapiens/hg19/variation/Mills_and_1000G_gold_standard.indels.vcf.gz"
     1000G_INDELS : "/storage/gluster/vol1/bcbio/genomes/Hsapiens/hg19/variation/1000G_phase1.snps.high_confidence.vcf.gz"
