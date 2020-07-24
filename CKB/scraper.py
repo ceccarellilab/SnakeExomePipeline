@@ -49,7 +49,7 @@ with open ('EntrezEnsebml.txt', 'r') as f:
 
 allData = []
 
-with open('cbk.tsv', 'wt') as out_file:
+with open('ckb.tsv', 'wt') as out_file:
     tsv_writer = csv.writer(out_file, delimiter='\t')
     #for i in range(30):
     for elem in list_id:
