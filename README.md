@@ -57,5 +57,11 @@
 	- **NORMAL** : Name of Normal
 	- **FASTQ_NORMAL_PATH** : Folder path to FASTQ of Normal
 
+### Usage:
+- Launch shell script to create the report:  
+    ````shell 
+    $ ./createReport.sh
+    ```
+
 ### Output file:
 - **html_pipeline.zip**: Contains a dynamic HTML report executable locally
