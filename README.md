@@ -58,10 +58,10 @@
 	- **FASTQ_NORMAL_PATH** : Folder path to FASTQ of Normal
 
 ### Usage:
+- Define the options file and batch files of normal and tumor samples.
 - Launch shell script to create the report:  
     ````shell 
     $ ./createReport.sh
-    ```
 
 ### Output file:
 - **html_pipeline.zip**: Contains a dynamic HTML report executable locally
