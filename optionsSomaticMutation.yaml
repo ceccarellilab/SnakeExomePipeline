@@ -28,3 +28,6 @@ BEDTOOLS_PATH : "/glusterfs/biostorage1/brick1/bcbio/anaconda/pkgs/bedtools-2.27
 
 cbioFile : "/storage/gluster/vol1/data/PUBLIC/NGS_ReferenceDatabase/Homo_sapiens/cBioDb/cBioMut.bed"
 cbioScore : "SomaticVariants_cBio.bed"
+
+# Threads
+NUM_FORKS : 30 #number of fork (parallel)
