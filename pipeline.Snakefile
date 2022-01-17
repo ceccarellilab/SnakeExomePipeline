@@ -161,6 +161,18 @@ def get_variantAnnotation(wildcards):
 	ls = get_fastqN("N-filtDNAscope.snpEff.vcf.gz") + get_fastqT("T-filtDNAscope.snpEff.vcf.gz")
 	return ls
 
+def get_somaticVariantCallingTNseq(wildcards):
+	ls = get_fastqT("-TNhaplotyper.vcf.gz")
+	return ls
+
+def get_somaticVariantCallingTNscope(wildcards):
+	ls = get_fastqT("-filtTNscope.vcf.gz")
+	return ls
+
+def get_somaticVariantAnnotation(wildcards):
+	ls = get_fastqT("-filtTNscope.snpEff.vcf.gz")
+	return ls
+
 def get_fastqFile(wildcards):
 	ls = []
 	sample = unpack({wildcards.sample})[0]
@@ -175,9 +187,17 @@ def get_fastqFile(wildcards):
 	ls.append(path + sample + "_"+ config['FASTQ_SUFFIXES']["2_SUFFIX"]) 
 	return ls
 
+def getControlSample(wildcards):
+	ls = []
+	sample = unpack({wildcards.sample})[0]
+	ind = np.where(batch[:,1] == sample)[0][0]
+	path = batch[ind][3]
+	ls.append(path) 
+	return ls
+
 rule all:
 	input:
-		get_variantAnnotation
+		get_somaticVariantAnnotation
 
 # 1 Mapping reads with BWA-MEM, sorting for normal sample
 rule mapping:
@@ -307,4 +327,61 @@ rule variantAnnotation:
 		{params.snpEffpath} -Xms1000m -Xmx36400m -Djava.io.tmpdir=tmpdir eff -noStats -t -noLog -dataDir /storage/qnap_vol1/bcbio/genomes/Hsapiens/hg19/snpeff -hgvs -noLof -i vcf -o vcf -noInteraction -noMotif -noNextProt -strict GRCh37.75 {wildcards.sample}{wildcards.NorT}-filtDNAscope.vcf.gz | {params.bgzippath} --threads {params.nthreads} -c > {wildcards.sample}{wildcards.NorT}-filtDNAscope.snpEff.vcf.gz || true
 		"""
 
-		
+rule somaticVariantCallingTNseq:
+	input:
+		get_variantAnnotation
+	output:
+		"{sample}-TNhaplotyper.vcf.gz"
+	params:
+		sentionpath =config['SENTIEON_DIR'],
+		fastapath = config['FASTA'],
+		nthreads = config['NUM_THREADS'],
+		controlSample = lambda wildcards: getControlSample(wildcards),
+		PON_TNsvn = config['PON_TNsnv'],
+		dbsnppath = config['DBSNP'],
+		cosmicdb = config['COSMIC_DB'],
+		PON_TNhaplotyper = config['PON_TNhaplotyper']
+	shell:
+		"""
+		{params.sentionpath}/bin/sentieon driver -r {params.fastapath} -t {params.nthreads} -i {wildcards.sample}T_recal.bam -i {params.controlSample}N_recal.bam --algo TNsnv --tumor_sample {wildcards.sample}T --normal_sample {params.controlSample}N --pon {params.PON_TNsvn} --cosmic {params.cosmicdb} --dbsnp {params.dbsnppath} --call_stats_out {wildcards.sample}-call.stats {wildcards.sample}-TNsnv.vcf.gz
+		{params.sentionpath}/bin/sentieon driver -r {params.fastapath} -t {params.nthreads} -i {wildcards.sample}T_recal.bam -i {params.controlSample}N_recal.bam --algo TNhaplotyper --tumor_sample {wildcards.sample}T --normal_sample {params.controlSample}N --pon {params.PON_TNhaplotyper} --cosmic {params.cosmicdb} --dbsnp {params.dbsnppath} {wildcards.sample}-TNhaplotyper.vcf.gz
+		"""
+
+rule somaticVariantCallingTNscope:
+	input:
+		get_somaticVariantCallingTNseq
+	output:
+		"{sample}-filtTNscope.vcf.gz"
+	params:
+		sentionpath =config['SENTIEON_DIR'],
+		fastapath = config['FASTA'],
+		nthreads = config['NUM_THREADS'],
+		controlSample = lambda wildcards: getControlSample(wildcards),
+		dbsnppath = config['DBSNP'],
+		mlmodelT = config['ML_MODEL_T'],
+		bcfpath = config['BCF_DIR']
+	shell:
+		"""
+		{params.sentionpath}/bin/sentieon driver -r {params.fastapath} -t {params.nthreads} -i {wildcards.sample}T_recal.bam -i {params.controlSample}N_recal.bam --algo TNscope --tumor_sample {wildcards.sample}T --normal_sample {params.controlSample}N --dbsnp {params.dbsnppath} --clip_by_minbq 1 --max_error_per_read 3 --min_init_tumor_lod 2.0 --min_base_qual 10 --min_base_qual_asm 10 --min_tumor_allele_frac 0.00005 {wildcards.sample}-tmpTNscope.vcf.gz
+		{params.sentionpath}/bin/sentieon driver -t {params.nthreads} -r {params.fastapath} --algo TNModelApply --model {params.mlmodelT} -v {wildcards.sample}-tmpTNscope.vcf.gz {wildcards.sample}-TNscope.vcf.gz
+		{params.bcfpath} filter -s ML_FAIL -i \INFO/ML_PROB > 0.81 {wildcards.sample}-TNscope.vcf.gz -O z -m x -o {wildcards.sample}-filtTNscope.vcf.gz
+		"""
+
+
+rule somaticVariantAnnotation:
+	input:
+		get_somaticVariantCallingTNscope
+	output:
+		"{sample}-filtTNscope.snpEff.vcf.gz"
+	params:
+		bgzippath = config['BGZIP_DIR'],
+		nthreads = config['NUM_THREADS'],
+		snpEffpath = config['SNPEFF_DIR']
+	conda:
+		"envs/environment.yml"
+	shell:
+		"""
+		{params.snpEffpath} -Xms1000m -Xmx36400m -Djava.io.tmpdir=tmpdir eff -noStats -t -noLog -dataDir /storage/gluster/vol1/bcbio/genomes/Hsapiens/hg19/snpeff -hgvs -noLof -i vcf -o vcf -noInteraction -noMotif -noNextProt -strict GRCh37.75 {wildcards.sample}-TNsnv.vcf.gz | {params.bgzippath} --threads {params.nthreads} -c > {wildcards.sample}-TNsnv.snpEff.vcf.gz || true
+		{params.snpEffpath} -Xms1000m -Xmx36400m -Djava.io.tmpdir=tmpdir eff -noStats -t -noLog -dataDir /storage/gluster/vol1/bcbio/genomes/Hsapiens/hg19/snpeff -hgvs -noLof -i vcf -o vcf -noInteraction -noMotif -noNextProt -strict GRCh37.75 {wildcards.sample}-TNhaplotyper.vcf.gz | {params.bgzippath} --threads {params.nthreads} -c > {wildcards.sample}-TNhaplotyper.snpEff.vcf.gz || true
+		{params.snpEffpath} -Xms1000m -Xmx36400m -Djava.io.tmpdir=tmpdir eff -noStats -t -noLog -dataDir /storage/gluster/vol1/bcbio/genomes/Hsapiens/hg19/snpeff -hgvs -noLof -i vcf -o vcf -noInteraction -noMotif -noNextProt -strict GRCh37.75 {wildcards.sample}-filtTNscope.vcf.gz | {params.bgzippath} --threads {params.nthreads} -c > {wildcards.sample}-filtTNscope.snpEff.vcf.gz || true
+		"""
