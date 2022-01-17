@@ -29,7 +29,8 @@ ML_MODEL_N : "/storage/qnap_vol1/data/PUBLIC/Tools/sentieon-genomics-201808.05/S
 ML_MODEL_T : "/storage/qnap_vol1/data/PUBLIC/Tools/sentieon-genomics-201808.05/SentieonTNscopeModel_GiAB_HighAF_LowFP-201711.05.model"
 
 # Sentieon software package and license file
-SENTIEON_DIR : "/storage/qnap_vol1/SHARED/NGSTOOLS/SENTIEON/sentieon-genomics-201911"
+#SENTIEON_DIR : "/storage/qnap_vol1/SHARED/NGSTOOLS/SENTIEON/sentieon-genomics-201911"
+SENTIEON_DIR : "/storage/qnap_vol1/SHARED/NGSTOOLS/SENTIEON/sentieon-genomics-202112"
 SENTIEON_LICENSE : "192.168.6.249:8990"
 # export SENTIEON_LICENSE = "/storage/qnap_vol1/SHARED/NGSTOOLS/SENTIEON/Columbia_University_eval.lic"
 
