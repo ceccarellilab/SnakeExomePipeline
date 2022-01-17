@@ -65,3 +65,9 @@
 
 ### Output file:
 - **html_pipeline.zip**: Contains a dynamic HTML report executable locally
+
+### Usage Snake Make:
+- Define the options file and batch files of normal and tumor samples.
+- Launch shell script to create the report:  
+    ````shell 
+    snakemake --cores 5 -s pipeline.Snakefile --use-conda
