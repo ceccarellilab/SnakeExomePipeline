@@ -1,0 +1,8 @@
+name: java
+channels:
+  - anaconda
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - openjdk

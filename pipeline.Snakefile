@@ -100,7 +100,7 @@ for file in fastqTum:
 os.chdir(config['workdir'])
 
 
-def get_fastqN():
+def get_fastqN(namefile):
 	ls = []
 	for i in range(normSize):
 		SAMPLE = uniqNorm[i]
@@ -111,10 +111,11 @@ def get_fastqN():
 		#fastq_str = " "
 		#for key in config['FASTQ_SUFFIXES']:
 		#        fastq_str = fastq_str + fastqNor + norm + "_"+ config['FASTQ_SUFFIXES'][key] +" "  
-		ls.append(fastqNor + norm + "_"+ config['FASTQ_SUFFIXES']["1_SUFFIX"]) 
+		#ls.append(fastqNor + norm + "_"+ config['FASTQ_SUFFIXES']["1_SUFFIX"]) 
+		ls.append(norm + namefile) 
 	return ls    
 
-def get_fastqT():
+def get_fastqT(namefile):
 	ls = []
 	for i in range(batchSize):
 		TUMOR = batch[i][1]
@@ -123,13 +124,41 @@ def get_fastqT():
 		fastq_str = " "
 		#for key in config['FASTQ_SUFFIXES']:
 		#    fastq_str = fastq_str + fastqTum[i] + TUMOR + "_"+ config['FASTQ_SUFFIXES'][key] +" " 
-		ls.append(TUMOR + "T_sorted.bam") 
+		ls.append(TUMOR + namefile) 
 
 	return ls
 
 
 def get_sortbam(wildcards):
-	ls = get_fastqN() + get_fastqT()
+	ls = get_fastqN("N_sorted.bam") + get_fastqT("T_sorted.bam")
+	return ls
+
+def get_metrics(wildcards):
+	ls = get_fastqN("N_gc_metrics.txt") + get_fastqT("T_gc_metrics.txt")
+	return ls
+
+def get_duplicate(wildcards):
+	ls = get_fastqN("N_deduped.bam") + get_fastqT("T_deduped.bam")
+	return ls
+
+def get_indelRealigner(wildcards):
+	ls = get_fastqN("N_realigned.bam") + get_fastqT("T_realigned.bam")
+	return ls
+
+def get_baseRecalibration(wildcards):
+	ls = get_fastqN("N_recal.bam") + get_fastqT("T_recal.bam")
+	return ls
+
+def get_HC_VariantCaller(wildcards):
+	ls = get_fastqN("N-output-hc.vcf.gz") + get_fastqT("T-output-hc.vcf.gz")
+	return ls
+
+def get_DNAscope_variantCaller(wildcards):
+	ls = get_fastqN("N-filtDNAscope.vcf.gz") + get_fastqT("T-filtDNAscope.vcf.gz")
+	return ls
+
+def get_variantAnnotation(wildcards):
+	ls = get_fastqN("N-filtDNAscope.snpEff.vcf.gz") + get_fastqT("T-filtDNAscope.snpEff.vcf.gz")
 	return ls
 
 def get_fastqFile(wildcards):
@@ -148,7 +177,7 @@ def get_fastqFile(wildcards):
 
 rule all:
 	input:
-		get_sortbam
+		get_variantAnnotation
 
 # 1 Mapping reads with BWA-MEM, sorting for normal sample
 rule mapping:
@@ -165,67 +194,117 @@ rule mapping:
 		"({params.sentionpath}/bin/sentieon bwa mem -M -R '@RG\\tID:{wildcards.sample}{wildcards.NorT}\\tSM:{wildcards.sample}{wildcards.NorT}\\tPL:{params.platform}' -t {params.nthreads} -K 10000000 {params.fastapath} {input} || echo -n error ) | {params.sentionpath}/bin/sentieon util sort -o {wildcards.sample}{wildcards.NorT}_sorted.bam -t {params.nthreads} --sam2bam -i -" 
 
 rule metrics:
-input:
-		get_fastqFile
+	input:
+		get_sortbam
 	output:
-		"{sample}{NorT}_sorted.bam"
+		"{sample}{NorT}_gc_metrics.txt"
 	params:
 		sentionpath =config['SENTIEON_DIR'],
 		fastapath = config['FASTA'],
-		platform = config['PLATFORM'],
 		nthreads = config['NUM_THREADS']
 	shell:
-		""
-	    "{params.sentionpath}/bin/sentieon driver -r {params.fastapath} -t {params.nthreads} -i {wildcards.sample}{wildcards.NorT}_sorted.bam --algo MeanQualityByCycle {wildcards.sample}{wildcards.NorT}_mq_metrics.txt --algo QualDistribution {wildcards.sample}{wildcards.NorT}_qd_metrics.txt --algo GCBias --summary {wildcards.sample}{wildcards.NorT}_gc_summary.txt {wildcards.sample}{wildcards.NorT}_gc_metrics.txt --algo AlignmentStat --adapter_seq '' {wildcards.sample}{wildcards.NorT}_aln_metrics.txt --algo InsertSizeMetricAlgo {wildcards.sample}{wildcards.NorT}_is_metrics.txt"
-		
-		#ONLYTUMOR
-		"{params.sentionpath}/bin/sentieon plot GCBias -o {wildcards.sample}{wildcards.NorT}_gc-report.pdf {wildcards.sample}{wildcards.NorT}_gc_metrics.txt"
+		"""
+	    {params.sentionpath}/bin/sentieon driver -r {params.fastapath} -t {params.nthreads} -i {wildcards.sample}{wildcards.NorT}_sorted.bam --algo MeanQualityByCycle {wildcards.sample}{wildcards.NorT}_mq_metrics.txt --algo QualDistribution {wildcards.sample}{wildcards.NorT}_qd_metrics.txt --algo GCBias --summary {wildcards.sample}{wildcards.NorT}_gc_summary.txt {wildcards.sample}{wildcards.NorT}_gc_metrics.txt --algo AlignmentStat --adapter_seq '' {wildcards.sample}{wildcards.NorT}_aln_metrics.txt --algo InsertSizeMetricAlgo {wildcards.sample}{wildcards.NorT}_is_metrics.txt
+		{params.sentionpath}/bin/sentieon plot GCBias -o {wildcards.sample}{wildcards.NorT}_gc-report.pdf {wildcards.sample}{wildcards.NorT}_gc_metrics.txt
+		"""
 
 rule removeDuplicate:
+	input:
+		get_metrics
+	output:
+		"{sample}{NorT}_deduped.bam"
+	params:
+		sentionpath =config['SENTIEON_DIR'],
+		nthreads = config['NUM_THREADS']
+	shell:
+		"""
+		{params.sentionpath}/bin/sentieon driver -t {params.nthreads} -i {wildcards.sample}{wildcards.NorT}_sorted.bam --algo LocusCollector --fun score_info {wildcards.sample}{wildcards.NorT}_score.txt
+		{params.sentionpath}/bin/sentieon driver -t {params.nthreads} -i {wildcards.sample}{wildcards.NorT}_sorted.bam --algo Dedup --rmdup --score_info {wildcards.sample}{wildcards.NorT}_score.txt --metrics {wildcards.sample}{wildcards.NorT}_dedup_metrics.txt {wildcards.sample}{wildcards.NorT}_deduped.bam
+		"""
 
-"{params.sentionpath}/bin/sentieon driver -t {params.nthreads} -i {wildcards.sample}{wildcards.NorT}_sorted.bam --algo LocusCollector --fun score_info {wildcards.sample}{wildcards.NorT}_score.txt"
-"{params.sentionpath}/bin/sentieon driver -t {params.nthreads} -i {wildcards.sample}{wildcards.NorT}_sorted.bam --algo Dedup --rmdup --score_info {wildcards.sample}{wildcards.NorT}_score.txt --metrics {wildcards.sample}{wildcards.NorT}_dedup_metrics.txt {wildcards.sample}{wildcards.NorT}_deduped.bam"
 
 rule indelRealigner:
-
-"{params.sentionpath}/bin/sentieon driver -r {params.fastapath} -t {params.nthreads} -i {wildcards.sample}{wildcards.NorT}_deduped.bam --algo Realigner{params.knowsitestr}{wildcards.sample}N_realigned.bam"
+	input:
+		get_duplicate
+	output:
+		"{sample}{NorT}_realigned.bam"
+	params:
+		sentionpath =config['SENTIEON_DIR'],
+		fastapath = config['FASTA'],
+		knowsitestr = config['KNOWN_SITES_STR'],
+		nthreads = config['NUM_THREADS']
+	shell:
+		"{params.sentionpath}/bin/sentieon driver -r {params.fastapath} -t {params.nthreads} -i {wildcards.sample}{wildcards.NorT}_deduped.bam --algo Realigner{params.knowsitestr}{wildcards.sample}{wildcards.NorT}_realigned.bam"
 
 rule baseRecalibration:
-
-"{params.sentionpath}/bin/sentieon driver -r {params.fastapath} -t {params.nthreads} -i {wildcards.sample}{wildcards.NorT}_realigned.bam --algo QualCal -k {params.dbsnppath}{params.knowsitestr}{wildcards.sample}N_recal_data.table"
-"{params.sentionpath}/bin/sentieon driver -r {params.fastapath} -t {params.nthreads} -i {wildcards.sample}{wildcards.NorT}_realigned.bam -q {wildcards.sample}{wildcards.NorT}_recal_data.table --algo QualCal -k {params.dbsnppath}{params.knowsitestr}{wildcards.sample}{wildcards.NorT}_recal_data.table.post"
-"{params.sentionpath}/bin/sentieon driver -t {params.nthreads} --algo QualCal --plot --before {wildcards.sample}{wildcards.NorT}_recal_data.table --after {wildcards.sample}{wildcards.NorT}_recal_data.table.post {wildcards.sample}{wildcards.NorT}_recal.csv"
-"{params.sentionpath}/bin/sentieon plot QualCal -o {wildcards.sample}{wildcards.NorT}_recal_plots.pdf {wildcards.sample}{wildcards.NorT}_recal.csv"
-"{params.sentionpath}/bin/sentieon driver -r {params.fastapath} -t {params.nthreads} -i {wildcards.sample}{wildcards.NorT}_realigned.bam -q {wildcards.sample}{wildcards.NorT}_recal_data.table --algo ReadWriter {wildcards.sample}{wildcards.NorT}_recal.bam"
+	input:
+		get_indelRealigner
+	output:
+		"{sample}{NorT}_recal.bam"
+	params:
+		sentionpath =config['SENTIEON_DIR'],
+		fastapath = config['FASTA'],
+		knowsitestr = config['KNOWN_SITES_STR'],
+		dbsnppath = config['DBSNP'],
+		nthreads = config['NUM_THREADS']
+	shell:
+		"""
+		{params.sentionpath}/bin/sentieon driver -r {params.fastapath} -t {params.nthreads} -i {wildcards.sample}{wildcards.NorT}_realigned.bam --algo QualCal -k {params.dbsnppath}{params.knowsitestr}{wildcards.sample}{wildcards.NorT}_recal_data.table
+		{params.sentionpath}/bin/sentieon driver -r {params.fastapath} -t {params.nthreads} -i {wildcards.sample}{wildcards.NorT}_realigned.bam -q {wildcards.sample}{wildcards.NorT}_recal_data.table --algo QualCal -k {params.dbsnppath}{params.knowsitestr}{wildcards.sample}{wildcards.NorT}_recal_data.table.post
+		{params.sentionpath}/bin/sentieon driver -t {params.nthreads} --algo QualCal --plot --before {wildcards.sample}{wildcards.NorT}_recal_data.table --after {wildcards.sample}{wildcards.NorT}_recal_data.table.post {wildcards.sample}{wildcards.NorT}_recal.csv
+		{params.sentionpath}/bin/sentieon plot QualCal -o {wildcards.sample}{wildcards.NorT}_recal_plots.pdf {wildcards.sample}{wildcards.NorT}_recal.csv
+		{params.sentionpath}/bin/sentieon driver -r {params.fastapath} -t {params.nthreads} -i {wildcards.sample}{wildcards.NorT}_realigned.bam -q {wildcards.sample}{wildcards.NorT}_recal_data.table --algo ReadWriter {wildcards.sample}{wildcards.NorT}_recal.bam
+		"""
 
 rule HC_VariantCaller:
+	input:
+		get_baseRecalibration
+	output:
+		"{sample}{NorT}-output-hc.vcf.gz"
+	params:
+		sentionpath =config['SENTIEON_DIR'],
+		fastapath = config['FASTA'],
+		dbsnppath = config['DBSNP'],
+		nthreads = config['NUM_THREADS']
+	shell:
+		"{params.sentionpath}/bin/sentieon driver -r {params.fastapath} -t {params.nthreads} -i {wildcards.sample}{wildcards.NorT}_recal.bam --algo Haplotyper -d {params.dbsnppath} --emit_conf=30 --call_conf=30 {wildcards.sample}{wildcards.NorT}-output-hc.vcf.gz"
 
-"{params.sentionpath}/bin/sentieon driver -r {params.fastapath} -t {params.nthreads} -i {wildcards.sample}{wildcards.NorT}_recal.bam --algo Haplotyper -d {params.dbsnppath} --emit_conf=30 --call_conf=30 {wildcards.sample}{wildcards.NorT}-output-hc.vcf.gz"
 
 rule DNAscope_variantCaller:
-
-"{params.sentionpath}/bin/sentieon driver -t {params.nthreads} -r {params.fastapath} -i {wildcards.sample}{wildcards.NorT}_recal.bam --algo DNAscope -d {params.dbsnppath} --model {params.MLmodel} {wildcards.sample}{wildcards.NorT}-tmpDNAscope.vcf.gz"
-"{params.sentionpath}/bin/sentieon driver -t {params.nthreads} -r {params.fastapath} --algo DNAModelApply --model {params.MLmodel} -v {wildcards.sample}{wildcards.NorT}-tmpDNAscope.vcf.gz {wildcards.sample}{wildcards.NorT}-DNAscope.vcf.gz"
-"{params.bcfpath} filter -s ML_FAIL -i INFO/ML_PROB > 0.81 {wildcards.sample}{wildcards.NorT}-DNAscope.vcf.gz -O z -m x -o {wildcards.sample}{wildcards.NorT}-filtDNAscope.vcf.gz"
+	input:
+		get_HC_VariantCaller
+	output:
+		"{sample}{NorT}-filtDNAscope.vcf.gz"
+	params:
+		sentionpath =config['SENTIEON_DIR'],
+		fastapath = config['FASTA'],
+		dbsnppath = config['DBSNP'],
+		bcfpath = config['BCF_DIR'],
+		MLmodel = config['ML_MODEL_N'],
+		nthreads = config['NUM_THREADS']
+	shell:
+		"""
+		{params.sentionpath}/bin/sentieon driver -t {params.nthreads} -r {params.fastapath} -i {wildcards.sample}{wildcards.NorT}_recal.bam --algo DNAscope -d {params.dbsnppath} --model {params.MLmodel} {wildcards.sample}{wildcards.NorT}-tmpDNAscope.vcf.gz
+		{params.sentionpath}/bin/sentieon driver -t {params.nthreads} -r {params.fastapath} --algo DNAModelApply --model {params.MLmodel} -v {wildcards.sample}{wildcards.NorT}-tmpDNAscope.vcf.gz {wildcards.sample}{wildcards.NorT}-DNAscope.vcf.gz
+		{params.bcfpath} filter -s ML_FAIL -i INFO/ML_PROB > 0.81 {wildcards.sample}{wildcards.NorT}-DNAscope.vcf.gz -O z -m x -o {wildcards.sample}{wildcards.NorT}-filtDNAscope.vcf.gz
+		"""
 
 rule variantAnnotation:
+	input:
+		get_DNAscope_variantCaller
+	output:
+		"{sample}{NorT}-filtDNAscope.snpEff.vcf.gz"
+	params:
+		sentionpath =config['SENTIEON_DIR'],
+		bgzippath = config['BGZIP_DIR'],
+		nthreads = config['NUM_THREADS'],
+		snpEffpath = config['SNPEFF_DIR']
+	conda:
+		"envs/environment.yml"
+	shell:
+		"""
+		{params.snpEffpath} -Xms1000m -Xmx36400m -Djava.io.tmpdir=tmpdir eff -noStats -t -noLog -dataDir /storage/qnap_vol1/bcbio/genomes/Hsapiens/hg19/snpeff -hgvs -noLof -i vcf -o vcf -noInteraction -noMotif -noNextProt -strict GRCh37.75 {wildcards.sample}{wildcards.NorT}-output-hc.vcf.gz | {params.bgzippath} --threads {params.nthreads} -c > {wildcards.sample}{wildcards.NorT}-output-hc.snpEff.vcf.gz || true
+		{params.snpEffpath} -Xms1000m -Xmx36400m -Djava.io.tmpdir=tmpdir eff -noStats -t -noLog -dataDir /storage/qnap_vol1/bcbio/genomes/Hsapiens/hg19/snpeff -hgvs -noLof -i vcf -o vcf -noInteraction -noMotif -noNextProt -strict GRCh37.75 {wildcards.sample}{wildcards.NorT}-filtDNAscope.vcf.gz | {params.bgzippath} --threads {params.nthreads} -c > {wildcards.sample}{wildcards.NorT}-filtDNAscope.snpEff.vcf.gz || true
+		"""
 
-"/storage/gluster/vol1/bcbio/anaconda/bin/snpEff -Xms1000m -Xmx36400m -Djava.io.tmpdir={params.sentiontmp} eff -noStats -t -noLog -dataDir /storage/gluster/vol1/bcbio/genomes/Hsapiens/hg19/snpeff -hgvs -noLof -i vcf -o vcf -noInteraction -noMotif -noNextProt -strict GRCh37.75 {wildcards.sample}{wildcards.NorT}-output-hc.vcf.gz | {params.bgzippath} --threads {params.nthreads} -c > {wildcards.sample}{wildcards.NorT}-output-hc.snpEff.vcf.gz"
-"/storage/gluster/vol1/bcbio/anaconda/bin/snpEff -Xms1000m -Xmx36400m -Djava.io.tmpdir={params.sentiontmp} eff -noStats -t -noLog -dataDir /storage/gluster/vol1/bcbio/genomes/Hsapiens/hg19/snpeff -hgvs -noLof -i vcf -o vcf -noInteraction -noMotif -noNextProt -strict GRCh37.75 {wildcards.sample}{wildcards.NorT}-filtDNAscope.vcf.gz | {params.bgzippath} --threads {params.nthreads} -c > {wildcards.sample}{wildcards.NorT}-filtDNAscope.snpEff.vcf.gz"
-
-rule somaticVariantCallingTNseq:
-
-"{params.sentionpath}/bin/sentieon driver -r {params.fastapath} -t {params.nthreads} -i "+TUMOR+"T_recal.bam -i {wildcards.sample}{wildcards.NorT}_recal.bam --algo TNsnv --tumor_sample "+TUMOR+"T --normal_sample {wildcards.sample}N --pon {params.PON_TNsvn} --cosmic {params.cosmicdb} --dbsnp {params.dbsnppath} --call_stats_out "+TUMOR+"-call.stats "+TUMOR+"-TNsnv.vcf.gz"
-"{params.sentionpath}/bin/sentieon driver -r {params.fastapath} -t {params.nthreads} -i "+TUMOR+"T_recal.bam -i {wildcards.sample}{wildcards.NorT}_recal.bam --algo TNhaplotyper --tumor_sample "+TUMOR+"T --normal_sample {wildcards.sample}N --pon {params.PON_TNhaplotyper} --cosmic {params.cosmicdb} --dbsnp {params.dbsnppath} "+TUMOR+"-TNhaplotyper.vcf.gz"
-
-rule somaticVariantCallingTNscope:
-
-"{params.sentionpath}/bin/sentieon driver -r {params.fastapath} -t {params.nthreads} -i "+TUMOR+"T_recal.bam -i {wildcards.sample}{wildcards.NorT}_recal.bam --algo TNscope --tumor_sample "+TUMOR+"T --normal_sample {wildcards.sample}N --dbsnp {params.dbsnppath} --clip_by_minbq 1 --max_error_per_read 3 --min_init_tumor_lod 2.0 --min_base_qual 10 --min_base_qual_asm 10 --min_tumor_allele_frac 0.00005 "+TUMOR+"-tmpTNscope.vcf.gz"
-"{params.sentionpath}/bin/sentieon driver -t {params.nthreads} -r {params.fastapath} --algo TNModelApply --model "+data['ML_MODEL_T'] +" -v "+TUMOR+"-tmpTNscope.vcf.gz "+TUMOR+"-TNscope.vcf.gz"
-"{params.bcfpath} filter -s ML_FAIL -i \INFO/ML_PROB > 0.81 "+TUMOR+"-TNscope.vcf.gz -O z -m x -o "+TUMOR+ "-filtTNscope.vcf.gz"
-
-rule somaticVariantAnnotation:
-
-"/storage/gluster/vol1/bcbio/anaconda/bin/snpEff -Xms1000m -Xmx36400m -Djava.io.tmpdir={params.sentiontmp} eff -noStats -t -noLog -dataDir /storage/gluster/vol1/bcbio/genomes/Hsapiens/hg19/snpeff -hgvs -noLof -i vcf -o vcf -noInteraction -noMotif -noNextProt -strict GRCh37.75 "+TUMOR+"-TNsnv.vcf.gz | {params.bgzippath} --threads {params.nthreads} -c > "+TUMOR+"-TNsnv.snpEff.vcf.gz"
-"/storage/gluster/vol1/bcbio/anaconda/bin/snpEff -Xms1000m -Xmx36400m -Djava.io.tmpdir={params.sentiontmp} eff -noStats -t -noLog -dataDir /storage/gluster/vol1/bcbio/genomes/Hsapiens/hg19/snpeff -hgvs -noLof -i vcf -o vcf -noInteraction -noMotif -noNextProt -strict GRCh37.75 "+TUMOR+"-TNhaplotyper.vcf.gz | {params.bgzippath} --threads {params.nthreads} -c > "+TUMOR+"-TNhaplotyper.snpEff.vcf.gz"
-"/storage/gluster/vol1/bcbio/anaconda/bin/snpEff -Xms1000m -Xmx36400m -Djava.io.tmpdir={params.sentiontmp} eff -noStats -t -noLog -dataDir /storage/gluster/vol1/bcbio/genomes/Hsapiens/hg19/snpeff -hgvs -noLof -i vcf -o vcf -noInteraction -noMotif -noNextProt -strict GRCh37.75 "+TUMOR+"-filtTNscope.vcf.gz | {params.bgzippath} --threads {params.nthreads} -c > "+TUMOR+"-filtTNscope.snpEff.vcf.gz"
+		
