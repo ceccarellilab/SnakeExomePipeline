@@ -1,0 +1,12 @@
+name: Renv
+channels:
+  - R
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - r-doParallel
+  - r-devtools
+  - r-vcfR
+  #- devtools:
+  #   - git+https://github.com/knausb/vcfR
