@@ -25,6 +25,8 @@ os.environ["SENTIEON_DIR"] = config['SENTIEON_DIR']
 os.environ["SENTIEON_LICENSE"]= config['SENTIEON_LICENSE']
 os.environ["BCFTOOLS_PLUGINS"]= config['BCF_DIR']
 
+os.environ["BEDTOOLS_DIR"] = config['BEDTOOLS_DIR']
+
 #from IPython.display import HTML
 
 #Read sample list
@@ -140,9 +142,16 @@ def get_readcount(wildcards):
 	return ls
 
 def get_annfile(wildcards):
-	ls = str(my_basedir) + "/Analysis/ann.in"
+	ls = str(my_basedir) + "/Analysis/ann.out.log"
 	return ls
 
+def get_finalannfile(wildcards):
+	ls = str(my_basedir) + "/Analysis/Final.bed"
+	return ls
+
+def get_merscore(wildcards):
+	ls = str(my_basedir) + "/Analysis/" + config["MER_SCORE"]
+	return ls
 
 def getControlSample(wildcards):
 	ls = []
@@ -154,7 +163,7 @@ def getControlSample(wildcards):
 
 rule all:
 	input:
-		get_annfile
+		get_merscore
 
 rule locFromR:
 	input:
@@ -187,23 +196,46 @@ rule readCount:
 	shell:
 		" sh {workflow.basedir}/scripts/bamreadcount.sh {workflow.basedir}/fpfilter {params.fastaPath} {params.workPath} {params.bamreadcount} {wildcards.sample}.loc {wildcards.sample}.var {params.fpfilterfile}"
 
+
 rule ANNOVARAnnotation:
 	input:
 		get_readcount
 	output:
-		"{basedir}/Analysis/ann.in"
+		"{basedir}/Analysis/ann.out.log"
 	shell:
 		"""
 		Rscript {workflow.basedir}/R/script2.R {workflow.basedir}
+		cd {workflow.basedir}/Analysis/
+		/storage/qnap_vol1/data/PUBLIC/Tools/annovar2017Jul16/table_annovar.pl ann.in /storage/qnap_vol1/data/PUBLIC/Tools/annovar2017Jul16/humandb/ -buildver hg19 -out ann.out -remove -protocol refGene,avsnp150,snp138NonFlagged,exac03,1000g2015aug_all,esp6500siv2_all,kaviar_20150923,hrcr1,cosmic80,clinvar_20170905,dbnsfp33a,dbscsnv11,dann,eigen,gerp++gt2,cadd  -operation g,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f -nastring . --thread 80 || true
 		"""
 
-""""
-%%bash
-/storage/gluster/vol1/data/PUBLIC/Tools/annovar2017Jul16/table_annovar.pl ann.in \
-/storage/gluster/vol1/data/PUBLIC/Tools/annovar2017Jul16/humandb/ -buildver hg19 -out ann.out \
--remove -protocol refGene,avsnp150,snp138NonFlagged,\
-exac03,1000g2015aug_all,esp6500siv2_all,kaviar_20150923,hrcr1,\
-cosmic80,clinvar_20170905,\
-dbnsfp33a,dbscsnv11,dann,eigen,gerp++gt2,cadd  \
--operation g,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f -nastring . --thread 80
-"""
+rule FinalAnnotation:
+	input:
+		get_annfile
+	params:
+		ponfilter=config["PONFILTER_FILE"],
+		pondir=config["PON_DIR"]
+	output:
+		"{basedir}/Analysis/Final.bed"
+	conda:
+		"envs/environmentR.yml"
+	shell:
+		"""
+		cd {workflow.basedir}/Analysis/
+		Rscript {workflow.basedir}/R/script3.R {workflow.basedir} {params.ponfilter} {params.pondir}
+		"""
+
+rule merScore:
+	input:
+		get_finalannfile
+	output:
+		"{basedir}/Analysis/{merscore}.bed"
+	params:
+		merPath= config["MER_FILE"] ,
+		MER_SCORE= config["MER_SCORE"], 
+		bedtools= config["BEDTOOLS_PATH"]
+	shell:
+		"""
+		cd {workflow.basedir}/Analysis/
+		{params.bedtools} intersect -wo -a Final.bed -b {params.merPath} > {params.MER_SCORE}
+		"""
