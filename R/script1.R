@@ -234,3 +234,5 @@ for(i in 1:length(patients)){
   write.table(loc,file=paste0(name,".loc"),quote=FALSE,row.names=FALSE,col.names=FALSE)
   # system(paste0("split -l ",n," --additional-suffix .loc ",paste0(name,".loc")))
 }
+
+save(vcf,file = paste0(fileDir,"vcf.rda"))

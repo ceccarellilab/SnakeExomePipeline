@@ -132,14 +132,17 @@ def get_fastqT(namefile):
 def get_locFromR(wildcards):
 	ls = get_fastqT(".loc")
 	ls = [str(my_basedir) + "/fpfilter/" + s for s in ls]
-	return ls
+	return ls[0]
 
 def get_readcount(wildcards):
 	ls = get_fastqT(".log")
 	ls = [str(my_basedir) + "/fpfilter/" + s for s in ls]
 	return ls
 
-print(get_locFromR(""))
+def get_annfile(wildcards):
+	ls = str(my_basedir) + "/Analysis/ann.in"
+	return ls
+
 
 def getControlSample(wildcards):
 	ls = []
@@ -151,8 +154,7 @@ def getControlSample(wildcards):
 
 rule all:
 	input:
-		get_readcount
-		
+		get_annfile
 
 rule locFromR:
 	input:
@@ -176,10 +178,32 @@ rule readCount:
 	input:
 		get_locFromR
 	output:
-		"{dir}/{sample}.log"
+		"{dir}/{sample}.fpfilter.pass"
 	params:
 		fastaPath = config["FASTA_FILE"],
 		workPath =  config["WORK_DIR"], 
-		bamreadcount = config["BAMREADCOUNT_FILE"]
+		bamreadcount = config["BAMREADCOUNT_FILE"],
+		fpfilterfile = config["FPFILTER_FILE"]
 	shell:
-		" sh {workflow.basedir}/scripts/bamreadcount.sh {workflow.basedir}/fpfilter {params.fastaPath} {params.workPath} {params.bamreadcount} {wildcards.sample}.loc {wildcards.sample}.var"
+		" sh {workflow.basedir}/scripts/bamreadcount.sh {workflow.basedir}/fpfilter {params.fastaPath} {params.workPath} {params.bamreadcount} {wildcards.sample}.loc {wildcards.sample}.var {params.fpfilterfile}"
+
+rule ANNOVARAnnotation:
+	input:
+		get_readcount
+	output:
+		"{basedir}/Analysis/ann.in"
+	shell:
+		"""
+		Rscript {workflow.basedir}/R/script2.R {workflow.basedir}
+		"""
+
+""""
+%%bash
+/storage/gluster/vol1/data/PUBLIC/Tools/annovar2017Jul16/table_annovar.pl ann.in \
+/storage/gluster/vol1/data/PUBLIC/Tools/annovar2017Jul16/humandb/ -buildver hg19 -out ann.out \
+-remove -protocol refGene,avsnp150,snp138NonFlagged,\
+exac03,1000g2015aug_all,esp6500siv2_all,kaviar_20150923,hrcr1,\
+cosmic80,clinvar_20170905,\
+dbnsfp33a,dbscsnv11,dann,eigen,gerp++gt2,cadd  \
+-operation g,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f -nastring . --thread 80
+"""
