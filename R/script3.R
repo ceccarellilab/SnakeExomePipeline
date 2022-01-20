@@ -263,3 +263,4 @@ table(Final$SNP)
 Final <- data.frame(fiftymer=".",Final,stringsAsFactors = FALSE)
 bed <- Final[,c("Chr","Start","End")]
 write.table(bed,file='Final.bed',col.names=FALSE,row.names=FALSE,quote=FALSE,sep='\t')
+save(Final,file='Final.RData')

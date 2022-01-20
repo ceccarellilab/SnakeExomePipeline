@@ -6,7 +6,7 @@ PON_DIR : "/storage/gluster/vol1/data/PUBLIC/NGS_ReferenceDatabase/firecloud_PoN
 CBIO_DB : "/storage/gluster/vol1/data/BIOINFO/fulvio/cBioDb/cBioMutDb.RData"
 FLAGS_FILE : "/storage/gluster/vol1/data/PUBLIC/NGS_ReferenceDatabase/FLAGS_12920_2017_309_MOESM3_ESM.txt"
 
-CENSUS_FILE : "/storage/gluster/vol1/data/BIOINFO/fulvio/Columbia/oncoAnnotation/Census_allFri Nov  3 17_33_51 2017.tsv"
+CENSUS_FILE : "/storage/gluster/vol1/data/BIOINFO/fulvio/Columbia/oncoAnnotation/'Census_allFri Nov  3 17_33_51 2017.tsv'"
 NATURE_FILE : "/storage/gluster/vol1/data/BIOINFO/fulvio/Columbia/oncoAnnotation/nature12981-s1.txt"
 ONCOKB_FILE : "/storage/gluster/vol1/data/BIOINFO/fulvio/Columbia/oncoAnnotation/oncoKB_allAnnotatedVariants.txt"
 
@@ -23,9 +23,11 @@ MER_SCORE : "50merScore.bed"
 MASK_FILE : "/storage/gluster/vol1/data/PUBLIC/NGS_ReferenceDatabase/Homo_sapiens/1000Genomes/20141020.pilot_mask.whole_genome.bed"
 MASK_SCORE : "Pilotmask.bed"
 
-BEDTOOLS_PATH : "/glusterfs/biostorage1/brick1/bcbio/anaconda/pkgs/bedtools-2.27.1-1/bin/bedtools"
+BEDTOOLS_PATH : "/storage/qnap_vol1/bcbio/anaconda/pkgs/bedtools-2.27.1-1/bin/bedtools"
 
 CBIO_FILE : "/storage/gluster/vol1/data/PUBLIC/NGS_ReferenceDatabase/Homo_sapiens/cBioDb/cBioMut.bed"
 CBIO_SCORE : "SomaticVariants_cBio.bed"
+
+BEDTOOLS_DIR : "/storage/qnap_vol1/bcbio/anaconda/pkgs/bedtools-2.27.1-1/bin/"
 
 NUM_FORKS : 30 #number of fork (parallel)

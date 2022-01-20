@@ -153,6 +153,14 @@ def get_merscore(wildcards):
 	ls = str(my_basedir) + "/Analysis/" + config["MER_SCORE"]
 	return ls
 
+def get_SomaticVariants(wildcards):
+	ls = str(my_basedir) + "/Analysis/SomaticVariants.bed"
+	return ls
+
+def get_FinalSomaticVariants(wildcards):
+	ls = str(my_basedir) + "/Analysis/SomaticVariants.txt"
+	return ls
+
 def getControlSample(wildcards):
 	ls = []
 	sample = unpack({wildcards.sample})[0]
@@ -163,7 +171,7 @@ def getControlSample(wildcards):
 
 rule all:
 	input:
-		get_merscore
+		get_FinalSomaticVariants
 
 rule locFromR:
 	input:
@@ -229,13 +237,43 @@ rule merScore:
 	input:
 		get_finalannfile
 	output:
-		"{basedir}/Analysis/{merscore}.bed"
+		"{basedir}/Analysis/{filename}.bed"
 	params:
 		merPath= config["MER_FILE"] ,
 		MER_SCORE= config["MER_SCORE"], 
-		bedtools= config["BEDTOOLS_PATH"]
+		bedtools= config["BEDTOOLS_PATH"], 
+		FLAGS_FILE= config["FLAGS_FILE"], 
+		cbioPath = config["CBIO_FILE"],
+		CBIO_SCORE = config["CBIO_SCORE"],
+		maskpath = config["MASK_FILE"],
+		MASK_SCORE = config["MASK_SCORE"]
 	shell:
 		"""
 		cd {workflow.basedir}/Analysis/
 		{params.bedtools} intersect -wo -a Final.bed -b {params.merPath} > {params.MER_SCORE}
+		Rscript {workflow.basedir}/R/script4.R {params.MER_SCORE}
+		{params.bedtools} intersect -wao -a Finalmask.bed -b {params.maskpath} > {params.MASK_SCORE}
+		Rscript {workflow.basedir}/R/script5.R {params.MER_SCORE} {params.FLAGS_FILE} {params.MASK_SCORE}
+		{params.bedtools} intersect -wao -f 1 -a SomaticVariants.bed -b {params.cbioPath} > {params.CBIO_SCORE}
+		"""
+
+rule somaticVariant:
+	input:
+		get_SomaticVariants
+	output:
+		"{basedir}/Analysis/SomaticVariants.txt"
+	params:
+		CBIO_DB= config["CBIO_DB"] ,
+		CBIO_SCORE = config["CBIO_SCORE"],
+		NUM_FORKS= config["NUM_FORKS"], 
+		CENSUS_FILE= config["CENSUS_FILE"], 
+		NATURE_FILE= config["NATURE_FILE"], 
+		ONCOKB_FILE = config["ONCOKB_FILE"],
+		SMG_FILE = config["SMG_FILE"]
+	conda:
+		"envs/environmentR.yml"
+	shell:
+		"""
+		cd {workflow.basedir}/Analysis/
+		Rscript {workflow.basedir}/R/script6.R {params.CBIO_DB} {params.CBIO_SCORE} {params.NUM_FORKS} {params.CENSUS_FILE} {params.NATURE_FILE} {params.ONCOKB_FILE} {params.SMG_FILE}
 		"""
