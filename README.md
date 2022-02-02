@@ -70,4 +70,4 @@
 - Define the options file and batch files of normal and tumor samples.
 - Launch shell script to create the report:  
     ````shell 
-    snakemake --cores 5 -s pipeline.Snakefile --use-conda
+    snakemake --cores 5 -s pipeline.Snakefile --use-conda --report report.html
