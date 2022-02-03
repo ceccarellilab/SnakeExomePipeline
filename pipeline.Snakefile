@@ -1,4 +1,5 @@
 # conda install pyyaml numpy
+report: "report/workflow.rst"
 
 configfile: "options.yaml"
 
@@ -9,7 +10,7 @@ my_basedir = workflow.current_basedir
 import glob
 import re
 import os
-
+import shutil
 
 #Set working directory
 
@@ -19,6 +20,8 @@ config['workdir'] = config['home'] + config['BATCH'] + "/"
 
 if not os.path.isdir(config['workdir']): 
 	os.mkdir(config['workdir']) 
+
+shutil.copy("options.yaml", config['workdir']+"options.yaml")
 
 os.environ["SENTIEON_DIR"] = config['SENTIEON_DIR']
 os.environ["SENTIEON_LICENSE"]= config['SENTIEON_LICENSE']
@@ -134,7 +137,8 @@ def get_sortbam(wildcards):
 	return ls
 
 def get_metrics(wildcards):
-	ls = get_fastqN("N_gc_metrics.txt") + get_fastqT("T_gc_metrics.txt")
+	#ls = get_fastqN("N_gc_metrics.txt") + get_fastqT("T_gc_metrics.txt")
+	ls = get_fastqN("N_gc-report.pdf") + get_fastqT("T_gc-report.pdf")
 	return ls
 
 def get_duplicate(wildcards):
@@ -217,7 +221,9 @@ rule metrics:
 	input:
 		get_sortbam
 	output:
-		"{sample}{NorT}_gc_metrics.txt"
+		report("{sample}{NorT}_gc-report.pdf", category="Step 1")
+		#"{sample}{NorT}_gc-report.pdf"
+		#"{sample}{NorT}_gc_metrics.txt"
 	params:
 		sentionpath =config['SENTIEON_DIR'],
 		fastapath = config['FASTA'],
