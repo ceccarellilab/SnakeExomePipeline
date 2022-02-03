@@ -71,3 +71,4 @@
 - Launch shell script to create the report:  
     ````shell 
     snakemake --cores 5 -s pipeline.Snakefile --use-conda
+	snakemake -s pipeline.Snakefile --report report.html
