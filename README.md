@@ -70,5 +70,10 @@
 - Define the options file and batch files of normal and tumor samples.
 - Launch shell script to create the report:  
     ````shell 
-    snakemake --cores 5 -s pipeline.Snakefile --use-conda
+    snakemake --cores 5 -s pipeline.Snakefile --use-conda 
 	snakemake -s pipeline.Snakefile --report report.html
+
+### Output file:
+- **report.html**: Contains a dynamic HTML report executable locally
+
+- [Example output](http://htmlpreview.github.io/?https://github.com/AntonioDeFalco/SnakeExomePipeline/blob/main/ABT414_Flank/example.html)

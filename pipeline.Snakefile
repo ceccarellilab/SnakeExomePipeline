@@ -150,7 +150,7 @@ def get_indelRealigner(wildcards):
 	return ls
 
 def get_baseRecalibration(wildcards):
-	ls = get_fastqN("N_recal.bam") + get_fastqT("T_recal.bam")
+	ls = get_fastqN("N_recal_plots.pdf") + get_fastqT("T_recal_plots.pdf")
 	return ls
 
 def get_HC_VariantCaller(wildcards):
@@ -221,7 +221,7 @@ rule metrics:
 	input:
 		get_sortbam
 	output:
-		report("{sample}{NorT}_gc-report.pdf", category="Step 1")
+		report("{sample}{NorT}_gc-report.pdf", category="metrics")
 		#"{sample}{NorT}_gc-report.pdf"
 		#"{sample}{NorT}_gc_metrics.txt"
 	params:
@@ -266,7 +266,8 @@ rule baseRecalibration:
 	input:
 		get_indelRealigner
 	output:
-		"{sample}{NorT}_recal.bam"
+		#"{sample}{NorT}_recal.bam"
+		report("{sample}{NorT}_recal_plots.pdf", category="Recal plot")
 	params:
 		sentionpath =config['SENTIEON_DIR'],
 		fastapath = config['FASTA'],
