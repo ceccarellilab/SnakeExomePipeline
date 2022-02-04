@@ -76,4 +76,4 @@
 ### Output file:
 - **report.html**: Contains a dynamic HTML report executable locally
 
-- [Example output](http://htmlpreview.github.io/?https://github.com/AntonioDeFalco/SnakeExomePipeline/blob/main/ABT414_Flank/example.html)
+- [Example output](http://htmlpreview.github.io/?https://raw.githubusercontent.com/AntonioDeFalco/SnakeExomePipeline/master/ABT414_Flank/report.html)
