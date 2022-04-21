@@ -6,7 +6,6 @@ CENSUS_FILE=args[4]
 NATURE_FILE=args[5]
 ONCOKB_FILE=args[6]
 SMG_FILE=args[7]
-
 library(parallel)
 load(file='Final.RData')
 
@@ -38,18 +37,18 @@ cBio <- function(x){
 
 
 cBioFunc <- function(i){
-    return(cBio(id[i]))
+  return(cBio(id[i]))
 }
 
 if(Sys.info()["sysname"]=="Windows"){
-
-cl <- parallel::makeCluster(getOption("cl.cores", NUM_FORKS))
-
-cBioAnn <- parallel::parLapply(cl, 1:length(id), cBioFunc)
-
-parallel::stopCluster(cl)
+  
+  cl <- parallel::makeCluster(getOption("cl.cores", NUM_FORKS))
+  
+  cBioAnn <- parallel::parLapply(cl, 1:length(id), cBioFunc)
+  
+  parallel::stopCluster(cl)
 }else{
-cBioAnn <- parallel::mclapply(1:length(id), cBioFunc, mc.cores = NUM_FORKS)
+  cBioAnn <- parallel::mclapply(1:length(id), cBioFunc, mc.cores = NUM_FORKS)
 }
 
 
@@ -101,18 +100,18 @@ onco <- function(i){
 
 
 oncoFunc <- function(i){
-    return(onco(i))
+  return(onco(i))
 }
 
 if(Sys.info()["sysname"]=="Windows"){
-
-cl <- parallel::makeCluster(getOption("cl.cores", NUM_FORKS))
-
-Onco <- parallel::parLapply(cl, 1:nrow(Final), oncoFunc)
-
-parallel::stopCluster(cl)
+  
+  cl <- parallel::makeCluster(getOption("cl.cores", NUM_FORKS))
+  
+  Onco <- parallel::parLapply(cl, 1:nrow(Final), oncoFunc)
+  
+  parallel::stopCluster(cl)
 }else{
-Onco <- parallel::mclapply(1:nrow(Final), oncoFunc, mc.cores = NUM_FORKS)
+  Onco <- parallel::mclapply(1:nrow(Final), oncoFunc, mc.cores = NUM_FORKS)
 }
 
 #cl <- makePSOCKcluster(NUM_FORKS,outfile="") #30
@@ -274,18 +273,18 @@ lowConf <- function(i){
 
 
 lowConfFunc <- function(i){
-    return(lowConf(i))
+  return(lowConf(i))
 }
 
 if(Sys.info()["sysname"]=="Windows"){
-
-cl <- parallel::makeCluster(getOption("cl.cores", NUM_FORKS))
-
-res <- parallel::parLapply(cl, 1:nrow(Final), lowConfFunc)
-
-parallel::stopCluster(cl)
+  
+  cl <- parallel::makeCluster(getOption("cl.cores", NUM_FORKS))
+  
+  res <- parallel::parLapply(cl, 1:nrow(Final), lowConfFunc)
+  
+  parallel::stopCluster(cl)
 }else{
-res <- parallel::mclapply(1:nrow(Final), lowConfFunc, mc.cores = NUM_FORKS)
+  res <- parallel::mclapply(1:nrow(Final), lowConfFunc, mc.cores = NUM_FORKS)
 }
 
 res <- unlist(res)
@@ -428,85 +427,87 @@ rownames(FinalF) <- NULL
 
 # HOTSPOST LIKE
 
-FinalF <- data.frame(Hotspot=".",FinalF,stringsAsFactors = FALSE)
-mut <- paste0(FinalF$Chr,",",FinalF$Start)
-Mut <- table(mut)
-Mut <- sort(Mut,decreasing=TRUE)
-Mut <- cbind(Mut,1)
-for(i in 1:nrow(Mut)){
-  print(i)
-  tmp <- unique(FinalF[mut==rownames(Mut)[i],"Patient_ID"])
-  # tmp <- unique(sapply(tmp,function(x) unlist(strsplit(x,"_"))[1]))
-  Mut[i,2] <- length(tmp)
-}
-
-for(i in 1:nrow(FinalF)){
-  FinalF[i,"Hotspot"] <- Mut[mut[i],2]
-}
-table(FinalF$Hotspot)
-
-# 1  10  12  13  14  15  16  17  18  19   2  20   3   4   5   6   7   8 
-# 42  10  12  13  28  45  48  51  18  38  22 700   9  12   5  12   7  32 
-
-#View(FinalF[FinalF$Hotspot!=1,])
-table(FinalF$Gene.refGene[FinalF$Hotspot!=1])
+if(nrow(FinalF)>0){
+  FinalF <- data.frame(Hotspot=".",FinalF,stringsAsFactors = FALSE)
+  mut <- paste0(FinalF$Chr,",",FinalF$Start)
+  Mut <- table(mut)
+  Mut <- sort(Mut,decreasing=TRUE)
+  Mut <- cbind(Mut,1)
+  for(i in 1:nrow(Mut)){
+    print(i)
+    tmp <- unique(FinalF[mut==rownames(Mut)[i],"Patient_ID"])
+    # tmp <- unique(sapply(tmp,function(x) unlist(strsplit(x,"_"))[1]))
+    Mut[i,2] <- length(tmp)
+  }
+  
+  for(i in 1:nrow(FinalF)){
+    FinalF[i,"Hotspot"] <- Mut[mut[i],2]
+  }
+  table(FinalF$Hotspot)
+  
+  # 1  10  12  13  14  15  16  17  18  19   2  20   3   4   5   6   7   8 
+  # 42  10  12  13  28  45  48  51  18  38  22 700   9  12   5  12   7  32 
+  
+  #View(FinalF[FinalF$Hotspot!=1,])
+  table(FinalF$Gene.refGene[FinalF$Hotspot!=1])
 
 
 
 ### REDUNDANT MUTATIONS
 
-rownames(FinalF) <- NULL
-id <- paste0(FinalF$Tumor_ID,"|",FinalF$Gene.refGene)
-table(red <- duplicated(id))
-# FALSE  TRUE 
-#  112   992 
-red <- id%in%id[red]
-FinalF <- data.frame(red,FinalF,stringsAsFactors = FALSE)
-#View(FinalF[FinalF$red==TRUE,c("Patient_ID","caller","callerN","Chr","Start","End","Ref","Alt","Gene.refGene")])
-toRemove <- FinalF$red & FinalF$callerN==1
-#View(FinalF[toRemove,c("Patient_ID","caller","callerN","Chr","Start","End","Ref","Alt","Gene.refGene")])
-FinalF <- FinalF[!toRemove,]
-rownames(FinalF) <- NULL
-nrow(FinalF) #1078
-
-# Mutation recurrence (correct to count only one mutation for patient)
-genes <- sapply(FinalF[,"Gene.refGene"],function(x) unlist(strsplit(x,","))[1])
-MutGenes <- table(genes)
-MutGenes <- sort(MutGenes,decreasing=TRUE)
-MutGenes <- cbind(MutGenes,1)
-for(i in 1:nrow(MutGenes)){
-  print(rownames(MutGenes)[i])
-  tmp <- FinalF[genes==rownames(MutGenes)[i],"Patient_ID"]
-  tmp <- unique(tmp)
-  MutGenes[i,2] <- length(tmp)
+  rownames(FinalF) <- NULL
+  id <- paste0(FinalF$Tumor_ID,"|",FinalF$Gene.refGene)
+  table(red <- duplicated(id))
+  # FALSE  TRUE 
+  #  112   992 
+  red <- id%in%id[red]
+  FinalF <- data.frame(red,FinalF,stringsAsFactors = FALSE)
+  #View(FinalF[FinalF$red==TRUE,c("Patient_ID","caller","callerN","Chr","Start","End","Ref","Alt","Gene.refGene")])
+  toRemove <- FinalF$red & FinalF$callerN==1
+  #View(FinalF[toRemove,c("Patient_ID","caller","callerN","Chr","Start","End","Ref","Alt","Gene.refGene")])
+  FinalF <- FinalF[!toRemove,]
+  rownames(FinalF) <- NULL
+  nrow(FinalF) #1078
+  
+  # Mutation recurrence (correct to count only one mutation for patient)
+  genes <- sapply(FinalF[,"Gene.refGene"],function(x) unlist(strsplit(x,","))[1])
+  MutGenes <- table(genes)
+  MutGenes <- sort(MutGenes,decreasing=TRUE)
+  MutGenes <- cbind(MutGenes,1)
+  for(i in 1:nrow(MutGenes)){
+    print(rownames(MutGenes)[i])
+    tmp <- FinalF[genes==rownames(MutGenes)[i],"Patient_ID"]
+    tmp <- unique(tmp)
+    MutGenes[i,2] <- length(tmp)
+  }
+  FinalF <- data.frame(FinalF,GeneRec=1,GenePzRec=1,stringsAsFactors = FALSE)
+  for(i in 1:nrow(FinalF)){
+    FinalF[i,"GeneRec"] <- MutGenes[genes[i],1]
+    FinalF[i,"GenePzRec"] <- MutGenes[genes[i],2]
+  }
+  table(FinalF$GeneRec)
+  table(FinalF$GenePzRec)
+  #View(FinalF[FinalF$GenePzRec!=1,])
+  
+  mutCounts <- sort(table(FinalF$Tumor_ID))
+  
+  tmp <- colnames(FinalF)
+  sel <- c("Patient_ID", #"Tumor_ID", "Normal_ID",
+           "caller",  "callerN",  "Type", "Chr",  "Start",  "End", "Ref", "Alt",  
+           "Gene.refGene",  "Description",  "Func.refGene", "GeneDetail.refGene","snpEff_func", "HGVSc",  "HGVSp",  "Interpro_domain",  
+           "Pathogenicity", "MissenseDamaging", "SIFT_pred",  "Polyphen2_HDIV_pred",  "MutationTaster_pred",  "PROVEAN_pred", 
+           "census",  "censusGermline", "nature", "natureGermline", "oncoKB", "oncoKBmut",  "smgOcc", 
+           "FPfilter",  "FPfail", "MaskedFilter", "PON_filter", "PON_filter_pass", "Hotspot",
+           # "VN_occurrences","vn",
+           "avsnp150",  "ExAC_ALL", "X1000g2015aug_all", "esp6500siv2_all", "Kaviar_AF",  "HRC_AF", 
+           "cosmic80",  "CLINSIG",  "CLNDBN", "CLNACC", "CLNDSDB",  "CLNDSDBID",
+           "t_depth", "t_ref_count",  "t_alt_count", "n_depth", "n_ref_count",  "n_alt_count",  "t_vaf",  "n_vaf",
+           "cBioId",  "cBioAAchange", "cBioKnownVar", "cBioStudyId",  "cBioSamplesNum", "cBioFreq",
+           "GeneRec", "GenePzRec")
+  setdiff(sel, tmp)
+  setdiff(tmp, sel)  
+  FinalF <- FinalF[,sel]
 }
-FinalF <- data.frame(FinalF,GeneRec=1,GenePzRec=1,stringsAsFactors = FALSE)
-for(i in 1:nrow(FinalF)){
-  FinalF[i,"GeneRec"] <- MutGenes[genes[i],1]
-  FinalF[i,"GenePzRec"] <- MutGenes[genes[i],2]
-}
-table(FinalF$GeneRec)
-table(FinalF$GenePzRec)
-#View(FinalF[FinalF$GenePzRec!=1,])
-
-mutCounts <- sort(table(FinalF$Tumor_ID))
-
-tmp <- colnames(FinalF)
-sel <- c("Patient_ID", #"Tumor_ID", "Normal_ID",
-         "caller",	"callerN",	"Type",	"Chr",	"Start",	"End", "Ref",	"Alt",	
-         "Gene.refGene",	"Description",	"Func.refGene",	"GeneDetail.refGene","snpEff_func",	"HGVSc",	"HGVSp",	"Interpro_domain",	
-         "Pathogenicity",	"MissenseDamaging",	"SIFT_pred",	"Polyphen2_HDIV_pred",	"MutationTaster_pred",	"PROVEAN_pred",	
-         "census",	"censusGermline",	"nature",	"natureGermline",	"oncoKB",	"oncoKBmut",	"smgOcc",	
-         "FPfilter",	"FPfail",	"MaskedFilter", "PON_filter", "PON_filter_pass", "Hotspot",
-        # "VN_occurrences","vn",
-         "avsnp150",	"ExAC_ALL",	"X1000g2015aug_all", "esp6500siv2_all",	"Kaviar_AF",	"HRC_AF",	
-         "cosmic80",	"CLINSIG",	"CLNDBN",	"CLNACC",	"CLNDSDB",	"CLNDSDBID",
-         "t_depth",	"t_ref_count",	"t_alt_count", "n_depth",	"n_ref_count",	"n_alt_count",	"t_vaf",	"n_vaf",
-         "cBioId",	"cBioAAchange",	"cBioKnownVar",	"cBioStudyId",	"cBioSamplesNum",	"cBioFreq",
-         "GeneRec",	"GenePzRec")
-setdiff(sel, tmp)
-setdiff(tmp, sel)  
-FinalF <- FinalF[,sel]
 
 save(Final,FinalS,FinalF,file="Final_no_PoN_filter.rda")
 FinalS <- FinalS[,!colnames(FinalS)%in%c("snpEff")]

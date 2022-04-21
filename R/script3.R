@@ -3,12 +3,13 @@ BASE_DIR=args[1]
 PONFILTER_FILE=args[2]
 PON_DIR=args[3]
 
+
 httr::set_config(httr::config(ssl_verifypeer = FALSE))
 
 fileDir = paste0(BASE_DIR,"/Analysis/")
 load(paste0(fileDir,"vcf.rda"))
 
-ann.out <- read.delim("ann.out.hg19_multianno.txt",as.is=TRUE)
+ann.out <- read.delim(paste0(fileDir,"ann.out.hg19_multianno.txt"),as.is=TRUE)
 paste0(colnames(ann.out),collapse="','")
 tmp <- c('Chr','Start','End','Ref','Alt','Func.refGene','Gene.refGene','GeneDetail.refGene','ExonicFunc.refGene','AAChange.refGene', #refGene
          'avsnp150', #avsnp150
@@ -48,7 +49,6 @@ tmp <- c('Chr','Start','End','Ref','Alt','Func.refGene','Gene.refGene','GeneDeta
          'Eigen', #eigen
          'gerp..gt2', #gerp++gt2
          'CADD','CADD_Phred') #cadd
-
 sel <- c('Chr','Start','End','Ref','Alt',
          'Func.refGene','Gene.refGene','GeneDetail.refGene','ExonicFunc.refGene','AAChange.refGene', 'Interpro_domain',
          'avsnp150','snp138NonFlagged',
@@ -63,8 +63,6 @@ ann.out[ann.out$ExonicFunc.refGene!=".","Func.refGene"] <- ann.out[ann.out$Exoni
 ann.out[ann.out$AAChange.refGene!=".","GeneDetail.refGene"] <- ann.out[ann.out$AAChange.refGene!=".","AAChange.refGene"]
 ann.out <- ann.out[,!colnames(ann.out)%in%c("ExonicFunc.refGene","AAChange.refGene")]
 
-
-###FINALE TABLE MAF-LIKE
 
 colnames(vcf)
 sel <- c("snpEff","snpEff_func","caller","callerN","t_depth","t_ref_count", "t_alt_count",
@@ -95,9 +93,62 @@ Final <- final
 rownames(Final) <- NULL
 # save(Final,file="Final.tmp.rda")
 
+if(sum(grepl("chr",Final$Chr))==0) Final$Chr <- paste0("chr", Final$Chr) 
+
 # PoNs FILTER (reference_PoNs_final_summed_tokens.hist)----------
-source(PONFILTER_FILE)
-Final <- ponFilter(maf=Final, ncores=1, threshold=-2.5, 
+#source(PONFILTER_FILE)
+
+ponFilter <- function(maf, ncores=60, threshold=-2.5, pondir){
+  #maf=Final
+  #ncores=1 
+  #threshold=-2.5
+  #pondir=PON_DIR
+  
+  maf$PON_filter <- rep(100,nrow(maf))
+  maf$PON_filter_pass <- rep(TRUE,nrow(maf))
+  chrs <- paste0("chr", c(1:22,"X"))
+  #chrs <- c(1:22,"X","Y")
+  x <- c(0.001, 0.003, 0.01, 0.03, 0.2, 1)
+  for(chr in chrs){
+    
+    f_name<- paste0(pondir,"/pon_",chr,".rds")
+    print(paste0("reading pon file ",f_name))
+    pon <- readRDS(f_name)
+   
+    loc <- maf$Chr==chr
+    
+    sel_mut <- maf[loc,]
+    require(doMC)
+    registerDoMC(ncores)
+    ans <- foreach(i=1:nrow(sel_mut)) %dopar% {
+    #for(i in 1:nrow(sel_mut)){
+      n_alt <- sel_mut$t_alt_count[i]
+      n_ref <- sel_mut$t_ref_count[i]
+      d <- pbeta(x, shape1=n_alt+1, shape2=n_ref+1)
+      d <- c(0,d)
+      f <- d[-1] - d[-length(d)]
+      #f[length(f)+1]<-f[length(f)]
+      position <- sel_mut$Start[i]
+      p1 <- 8*(position-1)+1
+      p2 <- p1+7
+      h <- pon[(p1+2):p2]
+      s <- f%*% h
+      s <- log10(s)
+      #print(s)
+      #maf[loc,]$PON_filter[i]<- s
+      if(is.na(s)){
+        print(paste0(i, ": NA occurred f: ",f, " h:", h))
+      }
+      return(s)
+    }
+    ss <- unlist(lapply(ans, function(x) x[1,1]))
+    maf$PON_filter[loc] <- ss
+  }
+  maf$PON_filter_pass <- maf$PON_filter < threshold  
+  return(maf)
+}
+
+Final <- ponFilter(maf=Final, ncores=20, threshold=-2.5, 
                    pondir=PON_DIR)
 table(Final$PON_filter_pass)
 # FALSE  TRUE 
@@ -105,7 +156,7 @@ table(Final$PON_filter_pass)
 
 
 library(biomaRt)
-ensembl <- useMart("ensembl",dataset="hsapiens_gene_ensembl")
+ensembl <- useMart("ensembl",dataset="hsapiens_gene_ensembl", host="uswest.ensembl.org")
 genes <- unique(Final$Gene.refGene)
 # tmp <- listAttributes(ensembl)
 # tmp[grep("description",tmp$name),]

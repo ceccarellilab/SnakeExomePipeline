@@ -14,7 +14,7 @@ echo $fileloc
 name=${fileloc%.loc}
 echo $name
 echo "$name bam-readcount"
-bam=`ls $workPath*/*/${name}_T_recal.bam`
+bam=`ls $workPath/${name}T_recal.bam`
 echo $bam
 echo '\n'
 $bamreadcount -f $fastaPath -w 1 -l $fileloc $bam  > ${name}.readcount

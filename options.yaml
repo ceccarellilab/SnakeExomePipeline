@@ -1,7 +1,7 @@
 # SET THE BATCH
-BATCH : "ABT414_Flank"
+BATCH : "Data"
 
-samplelist : "/home/adefalco/SnakeExomePipeline/ABT414_Flank.tsv"
+samplelist : "/home/adabbo/gdc/SnakeFromBAM/SnakeExomePipeline/Data.tsv"
 
 # samples
 FASTQ_SUFFIXES:
@@ -11,7 +11,7 @@ FASTQ_SUFFIXES:
 PLATFORM : "ILLUMINA"
 
 # reference data files
-FASTA : "/storage/qnap_vol1/bcbio/genomes/Hsapiens/hg19/bwa/hg19.fa"
+FASTA : "/home/adabbo/gdc/reference/Homo_sapiens_assembly19.fasta"
 DBSNP : "/storage/qnap_vol1/bcbio/genomes/Hsapiens/hg19/variation/dbsnp-150.vcf.gz"
 KNOWN_SITES:
     MILLS_INDELS : "/storage/qnap_vol1/bcbio/genomes/Hsapiens/hg19/variation/Mills_and_1000G_gold_standard.indels.vcf.gz"
@@ -22,7 +22,6 @@ PON_TNsnv : "/storage/qnap_vol1/data/PUBLIC/NGS_ReferenceDatabase/firecloud_PoNs
 # We recommend that you create the panel of normal file with the corresponding algorithm that you plan to use for the somatic mutation calling. 
 PON_TNhaplotyper : "/storage/qnap_vol1/data/PUBLIC/NGS_ReferenceDatabase/firecloud_PoNs/reference_PoNs_refseq_exome_10bp_hg19_300_1kg_normal_panel_CHR.vcf.gz"
 COSMIC_DB : "/storage/qnap_vol1/bcbio/genomes/Hsapiens/hg19/variation/cosmic.vcf.gz" 
-
 # DNAscope model
 ML_MODEL_N : "/storage/qnap_vol1/data/PUBLIC/Tools/sentieon-genomics-201808.05/SentieonDNAscopeModelBeta0.4a-201808.05.model"
 # TNscope model

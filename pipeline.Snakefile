@@ -72,7 +72,7 @@ if config['KNOWN_SITES'] is not None:
 
 config['KNOWN_SITES_STR']
 
-i = 0
+""" i = 0
 for file in fastqNorm[:,2]:
     if isinstance(file,np.ndarray):
         file = file[0]
@@ -97,7 +97,7 @@ for file in fastqTum:
         print(pathFile+config['FASTQ_SUFFIXES'][key])
         if not os.path.isfile(pathFile+config['FASTQ_SUFFIXES'][key]):
             raise Exception("Sorry, fastq not found :" + pathFile+config['FASTQ_SUFFIXES'][key])
-    i = i+1
+    i = i+1 """
 
 
 os.chdir(config['workdir'])
@@ -133,7 +133,7 @@ def get_fastqT(namefile):
 
 
 def get_sortbam(wildcards):
-	ls = get_fastqN("N_sorted.bam") + get_fastqT("T_sorted.bam")
+	ls = get_fastqN("N.bam") + get_fastqT("T.bam")
 	return ls
 
 def get_metrics(wildcards):
@@ -203,20 +203,6 @@ rule all:
 	input:
 		get_somaticVariantAnnotation
 
-# 1 Mapping reads with BWA-MEM, sorting for normal sample
-rule mapping:
-	input:
-		get_fastqFile
-	output:
-		"{sample}{NorT}_sorted.bam"
-	params:
-		sentionpath =config['SENTIEON_DIR'],
-		fastapath = config['FASTA'],
-		platform = config['PLATFORM'],
-		nthreads = config['NUM_THREADS']
-	shell:
-		"({params.sentionpath}/bin/sentieon bwa mem -M -R '@RG\\tID:{wildcards.sample}{wildcards.NorT}\\tSM:{wildcards.sample}{wildcards.NorT}\\tPL:{params.platform}' -t {params.nthreads} -K 10000000 {params.fastapath} {input} || echo -n error ) | {params.sentionpath}/bin/sentieon util sort -o {wildcards.sample}{wildcards.NorT}_sorted.bam -t {params.nthreads} --sam2bam -i -" 
-
 rule metrics:
 	input:
 		get_sortbam
@@ -230,7 +216,7 @@ rule metrics:
 		nthreads = config['NUM_THREADS']
 	shell:
 		"""
-	    {params.sentionpath}/bin/sentieon driver -r {params.fastapath} -t {params.nthreads} -i {wildcards.sample}{wildcards.NorT}_sorted.bam --algo MeanQualityByCycle {wildcards.sample}{wildcards.NorT}_mq_metrics.txt --algo QualDistribution {wildcards.sample}{wildcards.NorT}_qd_metrics.txt --algo GCBias --summary {wildcards.sample}{wildcards.NorT}_gc_summary.txt {wildcards.sample}{wildcards.NorT}_gc_metrics.txt --algo AlignmentStat --adapter_seq '' {wildcards.sample}{wildcards.NorT}_aln_metrics.txt --algo InsertSizeMetricAlgo {wildcards.sample}{wildcards.NorT}_is_metrics.txt
+	    {params.sentionpath}/bin/sentieon driver -r {params.fastapath} -t {params.nthreads} -i {wildcards.sample}{wildcards.NorT}.bam --algo MeanQualityByCycle {wildcards.sample}{wildcards.NorT}_mq_metrics.txt --algo QualDistribution {wildcards.sample}{wildcards.NorT}_qd_metrics.txt --algo GCBias --summary {wildcards.sample}{wildcards.NorT}_gc_summary.txt {wildcards.sample}{wildcards.NorT}_gc_metrics.txt --algo AlignmentStat --adapter_seq '' {wildcards.sample}{wildcards.NorT}_aln_metrics.txt --algo InsertSizeMetricAlgo {wildcards.sample}{wildcards.NorT}_is_metrics.txt
 		{params.sentionpath}/bin/sentieon plot GCBias -o {wildcards.sample}{wildcards.NorT}_gc-report.pdf {wildcards.sample}{wildcards.NorT}_gc_metrics.txt
 		"""
 
@@ -244,8 +230,8 @@ rule removeDuplicate:
 		nthreads = config['NUM_THREADS']
 	shell:
 		"""
-		{params.sentionpath}/bin/sentieon driver -t {params.nthreads} -i {wildcards.sample}{wildcards.NorT}_sorted.bam --algo LocusCollector --fun score_info {wildcards.sample}{wildcards.NorT}_score.txt
-		{params.sentionpath}/bin/sentieon driver -t {params.nthreads} -i {wildcards.sample}{wildcards.NorT}_sorted.bam --algo Dedup --rmdup --score_info {wildcards.sample}{wildcards.NorT}_score.txt --metrics {wildcards.sample}{wildcards.NorT}_dedup_metrics.txt {wildcards.sample}{wildcards.NorT}_deduped.bam
+		{params.sentionpath}/bin/sentieon driver -t {params.nthreads} -i {wildcards.sample}{wildcards.NorT}.bam --algo LocusCollector --fun score_info {wildcards.sample}{wildcards.NorT}_score.txt
+		{params.sentionpath}/bin/sentieon driver -t {params.nthreads} -i {wildcards.sample}{wildcards.NorT}.bam --algo Dedup --rmdup --score_info {wildcards.sample}{wildcards.NorT}_score.txt --metrics {wildcards.sample}{wildcards.NorT}_dedup_metrics.txt {wildcards.sample}{wildcards.NorT}_deduped.bam
 		"""
 
 
@@ -282,6 +268,7 @@ rule baseRecalibration:
 		{params.sentionpath}/bin/sentieon plot QualCal -o {wildcards.sample}{wildcards.NorT}_recal_plots.pdf {wildcards.sample}{wildcards.NorT}_recal.csv
 		{params.sentionpath}/bin/sentieon driver -r {params.fastapath} -t {params.nthreads} -i {wildcards.sample}{wildcards.NorT}_realigned.bam -q {wildcards.sample}{wildcards.NorT}_recal_data.table --algo ReadWriter {wildcards.sample}{wildcards.NorT}_recal.bam
 		"""
+
 
 rule HC_VariantCaller:
 	input:
@@ -330,8 +317,8 @@ rule variantAnnotation:
 		"envs/environment.yml"
 	shell:
 		"""
-		{params.snpEffpath} -Xms1000m -Xmx36400m -Djava.io.tmpdir=tmpdir eff -noStats -t -noLog -dataDir /storage/qnap_vol1/bcbio/genomes/Hsapiens/hg19/snpeff -hgvs -noLof -i vcf -o vcf -noInteraction -noMotif -noNextProt -strict GRCh37.75 {wildcards.sample}{wildcards.NorT}-output-hc.vcf.gz | {params.bgzippath} --threads {params.nthreads} -c > {wildcards.sample}{wildcards.NorT}-output-hc.snpEff.vcf.gz || true
-		{params.snpEffpath} -Xms1000m -Xmx36400m -Djava.io.tmpdir=tmpdir eff -noStats -t -noLog -dataDir /storage/qnap_vol1/bcbio/genomes/Hsapiens/hg19/snpeff -hgvs -noLof -i vcf -o vcf -noInteraction -noMotif -noNextProt -strict GRCh37.75 {wildcards.sample}{wildcards.NorT}-filtDNAscope.vcf.gz | {params.bgzippath} --threads {params.nthreads} -c > {wildcards.sample}{wildcards.NorT}-filtDNAscope.snpEff.vcf.gz || true
+		/storage/qnap_vol1/bcbio/anaconda/pkgs/java-jdk-8.0.92-1/bin/java -Xmx8g -jar /home/adabbo/gdc/SnakeFromBAM/SnakeExomePipeline/snpEff/snpEff.jar eff -noStats -t -noLog -dataDir /storage/qnap_vol1/bcbio/genomes/Hsapiens/hg19/snpeff -hgvs -noLof -i vcf -o vcf -noInteraction -noMotif -noNextProt -strict GRCh37.75 {wildcards.sample}{wildcards.NorT}-output-hc.vcf.gz | {params.bgzippath} --threads {params.nthreads} -c > {wildcards.sample}{wildcards.NorT}-output-hc.snpEff.vcf.gz || true
+		/storage/qnap_vol1/bcbio/anaconda/pkgs/java-jdk-8.0.92-1/bin/java -Xmx8g -jar /home/adabbo/gdc/SnakeFromBAM/SnakeExomePipeline/snpEff/snpEff.jar eff -noStats -t -noLog -dataDir /storage/qnap_vol1/bcbio/genomes/Hsapiens/hg19/snpeff -hgvs -noLof -i vcf -o vcf -noInteraction -noMotif -noNextProt -strict GRCh37.75 {wildcards.sample}{wildcards.NorT}-filtDNAscope.vcf.gz | {params.bgzippath} --threads {params.nthreads} -c > {wildcards.sample}{wildcards.NorT}-filtDNAscope.snpEff.vcf.gz || true
 		"""
 
 rule somaticVariantCallingTNseq:
@@ -350,8 +337,8 @@ rule somaticVariantCallingTNseq:
 		PON_TNhaplotyper = config['PON_TNhaplotyper']
 	shell:
 		"""
-		{params.sentionpath}/bin/sentieon driver -r {params.fastapath} -t {params.nthreads} -i {wildcards.sample}T_recal.bam -i {params.controlSample}N_recal.bam --algo TNsnv --tumor_sample {wildcards.sample}T --normal_sample {params.controlSample}N --pon {params.PON_TNsvn} --cosmic {params.cosmicdb} --dbsnp {params.dbsnppath} --call_stats_out {wildcards.sample}-call.stats {wildcards.sample}-TNsnv.vcf.gz
-		{params.sentionpath}/bin/sentieon driver -r {params.fastapath} -t {params.nthreads} -i {wildcards.sample}T_recal.bam -i {params.controlSample}N_recal.bam --algo TNhaplotyper --tumor_sample {wildcards.sample}T --normal_sample {params.controlSample}N --pon {params.PON_TNhaplotyper} --cosmic {params.cosmicdb} --dbsnp {params.dbsnppath} {wildcards.sample}-TNhaplotyper.vcf.gz
+		{params.sentionpath}/bin/sentieon driver -r {params.fastapath} -t {params.nthreads} -i {wildcards.sample}T_recal.bam -i {params.controlSample}N_recal.bam --algo TNsnv --tumor_sample {wildcards.sample} --normal_sample {params.controlSample} --pon {params.PON_TNsvn} --cosmic {params.cosmicdb} --dbsnp {params.dbsnppath} --call_stats_out {wildcards.sample}-call.stats {wildcards.sample}-TNsnv.vcf.gz
+		{params.sentionpath}/bin/sentieon driver -r {params.fastapath} -t {params.nthreads} -i {wildcards.sample}T_recal.bam -i {params.controlSample}N_recal.bam --algo TNhaplotyper --tumor_sample {wildcards.sample} --normal_sample {params.controlSample} --pon {params.PON_TNhaplotyper} --cosmic {params.cosmicdb} --dbsnp {params.dbsnppath} {wildcards.sample}-TNhaplotyper.vcf.gz
 		"""
 
 rule somaticVariantCallingTNscope:
@@ -369,7 +356,7 @@ rule somaticVariantCallingTNscope:
 		bcfpath = config['BCF_DIR']
 	shell:
 		"""
-		{params.sentionpath}/bin/sentieon driver -r {params.fastapath} -t {params.nthreads} -i {wildcards.sample}T_recal.bam -i {params.controlSample}N_recal.bam --algo TNscope --tumor_sample {wildcards.sample}T --normal_sample {params.controlSample}N --dbsnp {params.dbsnppath} --clip_by_minbq 1 --max_error_per_read 3 --min_init_tumor_lod 2.0 --min_base_qual 10 --min_base_qual_asm 10 --min_tumor_allele_frac 0.00005 {wildcards.sample}-tmpTNscope.vcf.gz
+		{params.sentionpath}/bin/sentieon driver -r {params.fastapath} -t {params.nthreads} -i {wildcards.sample}T_recal.bam -i {params.controlSample}N_recal.bam --algo TNscope --tumor_sample {wildcards.sample} --normal_sample {params.controlSample} --dbsnp {params.dbsnppath} --clip_by_minbq 1 --max_error_per_read 3 --min_init_tumor_lod 2.0 --min_base_qual 10 --min_base_qual_asm 10 --min_tumor_allele_frac 0.00005 {wildcards.sample}-tmpTNscope.vcf.gz
 		{params.sentionpath}/bin/sentieon driver -t {params.nthreads} -r {params.fastapath} --algo TNModelApply --model {params.mlmodelT} -v {wildcards.sample}-tmpTNscope.vcf.gz {wildcards.sample}-TNscope.vcf.gz
 		{params.bcfpath} filter -s ML_FAIL -i \INFO/ML_PROB > 0.81 {wildcards.sample}-TNscope.vcf.gz -O z -m x -o {wildcards.sample}-filtTNscope.vcf.gz
 		"""
@@ -388,7 +375,7 @@ rule somaticVariantAnnotation:
 		"envs/environment.yml"
 	shell:
 		"""
-		{params.snpEffpath} -Xms1000m -Xmx36400m -Djava.io.tmpdir=tmpdir eff -noStats -t -noLog -dataDir /storage/gluster/vol1/bcbio/genomes/Hsapiens/hg19/snpeff -hgvs -noLof -i vcf -o vcf -noInteraction -noMotif -noNextProt -strict GRCh37.75 {wildcards.sample}-TNsnv.vcf.gz | {params.bgzippath} --threads {params.nthreads} -c > {wildcards.sample}-TNsnv.snpEff.vcf.gz || true
-		{params.snpEffpath} -Xms1000m -Xmx36400m -Djava.io.tmpdir=tmpdir eff -noStats -t -noLog -dataDir /storage/gluster/vol1/bcbio/genomes/Hsapiens/hg19/snpeff -hgvs -noLof -i vcf -o vcf -noInteraction -noMotif -noNextProt -strict GRCh37.75 {wildcards.sample}-TNhaplotyper.vcf.gz | {params.bgzippath} --threads {params.nthreads} -c > {wildcards.sample}-TNhaplotyper.snpEff.vcf.gz || true
-		{params.snpEffpath} -Xms1000m -Xmx36400m -Djava.io.tmpdir=tmpdir eff -noStats -t -noLog -dataDir /storage/gluster/vol1/bcbio/genomes/Hsapiens/hg19/snpeff -hgvs -noLof -i vcf -o vcf -noInteraction -noMotif -noNextProt -strict GRCh37.75 {wildcards.sample}-filtTNscope.vcf.gz | {params.bgzippath} --threads {params.nthreads} -c > {wildcards.sample}-filtTNscope.snpEff.vcf.gz || true
-		"""
+        /storage/qnap_vol1/bcbio/anaconda/pkgs/java-jdk-8.0.92-1/bin/java -Xmx8g -jar /home/adabbo/gdc/SnakeFromBAM/SnakeExomePipeline/snpEff/snpEff.jar eff -noStats -t -noLog -dataDir /storage/gluster/vol1/bcbio/genomes/Hsapiens/hg19/snpeff -hgvs -noLof -i vcf -o vcf -noInteraction -noMotif -noNextProt -strict GRCh37.75 {wildcards.sample}-TNsnv.vcf.gz | {params.bgzippath} --threads {params.nthreads} -c > {wildcards.sample}-TNsnv.snpEff.vcf.gz || true
+		/storage/qnap_vol1/bcbio/anaconda/pkgs/java-jdk-8.0.92-1/bin/java -Xmx8g -jar /home/adabbo/gdc/SnakeFromBAM/SnakeExomePipeline/snpEff/snpEff.jar eff -noStats -t -noLog -dataDir /storage/gluster/vol1/bcbio/genomes/Hsapiens/hg19/snpeff -hgvs -noLof -i vcf -o vcf -noInteraction -noMotif -noNextProt -strict GRCh37.75 {wildcards.sample}-TNhaplotyper.vcf.gz | {params.bgzippath} --threads {params.nthreads} -c > {wildcards.sample}-TNhaplotyper.snpEff.vcf.gz || true
+		/storage/qnap_vol1/bcbio/anaconda/pkgs/java-jdk-8.0.92-1/bin/java -Xmx8g -jar /home/adabbo/gdc/SnakeFromBAM/SnakeExomePipeline/snpEff/snpEff.jar eff -noStats -t -noLog -dataDir /storage/gluster/vol1/bcbio/genomes/Hsapiens/hg19/snpeff -hgvs -noLof -i vcf -o vcf -noInteraction -noMotif -noNextProt -strict GRCh37.75 {wildcards.sample}-filtTNscope.vcf.gz | {params.bgzippath} --threads {params.nthreads} -c > {wildcards.sample}-filtTNscope.snpEff.vcf.gz || true
+        """

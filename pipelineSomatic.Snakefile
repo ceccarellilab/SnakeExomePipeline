@@ -72,6 +72,7 @@ if config['KNOWN_SITES'] is not None:
 
 config['KNOWN_SITES_STR']
 
+"""
 i = 0
 for file in fastqNorm[:,2]:
     if isinstance(file,np.ndarray):
@@ -98,7 +99,7 @@ for file in fastqTum:
         if not os.path.isfile(pathFile+config['FASTQ_SUFFIXES'][key]):
             raise Exception("Sorry, fastq not found :" + pathFile+config['FASTQ_SUFFIXES'][key])
     i = i+1
-
+"""
 
 os.chdir(config['workdir'])
 
@@ -137,12 +138,12 @@ def get_locFromR(wildcards):
 	return ls[0]
 
 def get_readcount(wildcards):
-	ls = get_fastqT(".log")
+	ls = get_fastqT(".fpfilter.pass")
 	ls = [str(my_basedir) + "/fpfilter/" + s for s in ls]
 	return ls
 
 def get_annfile(wildcards):
-	ls = str(my_basedir) + "/Analysis/ann.out.log"
+	ls = str(my_basedir) + "/Analysis/ann.out.hg19_multianno.txt" #"/Analysis/ann.out.log"
 	return ls
 
 def get_finalannfile(wildcards):
@@ -190,7 +191,6 @@ rule locFromR:
 		Rscript {workflow.basedir}/R/script1.R {workflow.basedir} {params.workdirr} {params.vcfdir} {params.vcffile} {params.threads}
 		"""
 
-
 rule readCount:
 	input:
 		get_locFromR
@@ -204,12 +204,11 @@ rule readCount:
 	shell:
 		" sh {workflow.basedir}/scripts/bamreadcount.sh {workflow.basedir}/fpfilter {params.fastaPath} {params.workPath} {params.bamreadcount} {wildcards.sample}.loc {wildcards.sample}.var {params.fpfilterfile}"
 
-
 rule ANNOVARAnnotation:
 	input:
 		get_readcount
 	output:
-		"{basedir}/Analysis/ann.out.log"
+		"{basedir}/Analysis/ann.out.hg19_multianno.txt" #.log
 	shell:
 		"""
 		Rscript {workflow.basedir}/R/script2.R {workflow.basedir}
@@ -237,7 +236,7 @@ rule merScore:
 	input:
 		get_finalannfile
 	output:
-		"{basedir}/Analysis/{filename}.bed"
+		"{basedir}/Analysis/SomaticVariants.bed"
 	params:
 		merPath= config["MER_FILE"] ,
 		MER_SCORE= config["MER_SCORE"], 

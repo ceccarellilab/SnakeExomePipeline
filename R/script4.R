@@ -1,6 +1,10 @@
 args = commandArgs( trailingOnly = TRUE )
 MER_SCORE=args[1]
+BASE_DIR=args[2]
 
+
+#fileDir = paste0(BASE_DIR,"/Analysis/")
+#setwd(fileDir)
 bed <- read.table(file='Final.bed', sep='\t')
 load(file='Final.RData')
 

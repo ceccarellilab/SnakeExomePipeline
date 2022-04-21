@@ -13,10 +13,11 @@ print(WORK_DIR)
 
 library(vcfR)
 library(doParallel)
-setwd("/storage/gluster/vol1/data/PUBLIC/SCAMBIO/ABT414_WES_Analysis/")
+#setwd("/storage/gluster/vol1/data/PUBLIC/SCAMBIO/ABT414_WES_Analysis/")
 dir.create(fileDir)
 setwd(WORK_DIR)
 
+print(dir(VCF_DIR,VCF_FILE))
 # VCF-------------------
 filenames <- dir(VCF_DIR,VCF_FILE)
 

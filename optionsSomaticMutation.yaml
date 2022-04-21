@@ -1,6 +1,6 @@
-WORK_DIR : "/storage/gluster/vol1/data/PUBLIC/SCAMBIO/ABT414_WES_Analysis/"
-VCF_DIR : "ensemble/vcf/"
-VCF_FILE : "ensemble.snpEff.vcf.gz"
+WORK_DIR : "/home/adabbo/gdc/SnakeFromBAM/SnakeExomePipeline/Data/"
+VCF_DIR : "ensemble/"
+VCF_FILE : "ensemble.snpEff.vcf.gz$"
 PONFILTER_FILE : "/storage/gluster/vol1/data/BIOINFO/fulvio/Columbia/ponFilter.R"
 PON_DIR : "/storage/gluster/vol1/data/PUBLIC/NGS_ReferenceDatabase/firecloud_PoNs/pon_by_chr/"
 CBIO_DB : "/storage/gluster/vol1/data/BIOINFO/fulvio/cBioDb/cBioMutDb.RData"
@@ -12,7 +12,7 @@ ONCOKB_FILE : "/storage/gluster/vol1/data/BIOINFO/fulvio/Columbia/oncoAnnotation
 
 SMG_FILE : "/storage/gluster/vol1/data/BIOINFO/fulvio/Columbia/mmc30.csv"
 
-FASTA_FILE : "/storage/gluster/vol1/bcbio/genomes/Hsapiens/hg19/bwa/hg19.fa"
+FASTA_FILE :  "/home/adabbo/gdc/reference/Homo_sapiens_assembly19.fasta"
 BAMREADCOUNT_FILE : "/storage/gluster/vol1/SHARED/NGSTOOLS/bam-readcounts/bam-readcount/build/bin/bam-readcount"
 
 FPFILTER_FILE : "/storage/gluster/vol1/data/PUBLIC/Tools/VARSCAN/fpfilter.pl"
